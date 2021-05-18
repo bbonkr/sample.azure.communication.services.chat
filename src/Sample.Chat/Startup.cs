@@ -15,6 +15,7 @@ using kr.bbon.AspNetCore;
 using Sample.Chat.Data;
 using Microsoft.EntityFrameworkCore;
 using Sample.Chat.Data.SqlServer;
+using Sample.Chat.Services;
 
 namespace Sample.Chat
 {
@@ -30,10 +31,12 @@ namespace Sample.Chat
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            var defaultVersion = new ApiVersion(0, 1);
+            var defaultVersion = new ApiVersion(1, 0);
             var connectionString = Configuration.GetConnectionString("Default");
 
             services.ConfigureAppOptions(Configuration);
+
+            services.AddChatServices(Configuration);
 
             services.AddDbContext<DefaultDbContext>(options =>
             {

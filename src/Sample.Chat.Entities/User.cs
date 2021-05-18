@@ -14,6 +14,10 @@ namespace Sample.Chat.Entities
 
         public string DisplayName { get; set; }
 
+        public bool IsBot { get; set; }
+
+        public bool IsModerator { get; set; }
+
         public virtual ICollection<ThreadParticipant> Threads { get; set; }
     }
 }

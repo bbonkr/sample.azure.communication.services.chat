@@ -15,13 +15,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Infrastruncture\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\Sample.Chat.Data.SqlServer\Sample.Chat.Data.SqlServer.csproj" />
     <ProjectReference Include="..\Sample.Chat.Data\Sample.Chat.Data.csproj" />
     <ProjectReference Include="..\Sample.Chat.Services\Sample.Chat.Services.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Infrastruncture\" />
   </ItemGroup>
 
 </Project>
