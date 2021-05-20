@@ -8,6 +8,6 @@ namespace Sample.Chat.Entities
 
         public string Topic { get; set; }
 
-        public virtual ICollection<ThreadParticipant> Prticipants { get; set; }
+        public virtual ICollection<ThreadParticipant> Participants { get; set; }
     }
 }

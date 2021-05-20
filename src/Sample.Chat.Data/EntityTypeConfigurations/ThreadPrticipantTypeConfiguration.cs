@@ -25,7 +25,7 @@ namespace Sample.Chat.Data.EntityTypeConfigurations
                 .HasComment("Thread identifier");
 
             builder.HasOne(x => x.Thread)
-                .WithMany(x => x.Prticipants)
+                .WithMany(x => x.Participants)
                 .HasForeignKey(x => x.ThreadId);
 
             builder.HasOne(x => x.User)
