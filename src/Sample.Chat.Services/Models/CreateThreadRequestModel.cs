@@ -9,6 +9,11 @@ namespace Sample.Chat.Services.Models
         public IEnumerable<string> ParticipantIds { get; set; }
     }
 
+    public class CreateThreadResponseModel
+    {
+        public string Id { get; set; }
+    }
+
     public class AddUserToThreadRequestModel
     {
         public string ThreadId { get; set; }
@@ -21,5 +26,19 @@ namespace Sample.Chat.Services.Models
         public string ThreadId { get; set; }
 
         public IEnumerable<string> ParticipantIds { get; set; }
+    }
+
+    public class ThreadResponseModel
+    {
+        public string Id { get; set; }
+
+        public string Topic { get; set; }
+
+        public IEnumerable<Participant> Participants { get; set; }
+    }
+
+    public class Participant
+    {
+        public string DisplayName { get; set; }
     }
 }

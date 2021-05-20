@@ -64,6 +64,7 @@ namespace Sample.Chat.Services
             var response = mapper.Map<UserModel>(user);
 
             response.Token = token.AccessToken.Token;
+            response.GatewayUrl = azureCommunicationServicesOptions.GatewayUrl;
 
             return response;
         }
@@ -87,6 +88,7 @@ namespace Sample.Chat.Services
 
                 user.Token = result.Token;
                 user.ExpiresOn = result.ExpiresOn.Ticks;
+                user.GatewayUrl = azureCommunicationServicesOptions.GatewayUrl;
             }
 
             return user;
@@ -111,6 +113,7 @@ namespace Sample.Chat.Services
 
                 user.Token = result.Token;
                 user.ExpiresOn = result.ExpiresOn.Ticks;
+                user.GatewayUrl = azureCommunicationServicesOptions.GatewayUrl;
             }
 
             return user;

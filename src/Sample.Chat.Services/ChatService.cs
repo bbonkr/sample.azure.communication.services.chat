@@ -5,8 +5,12 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
+using AutoMapper;
+
 using Azure.Communication;
 using Azure.Communication.Chat;
+
+using kr.bbon.EntityFrameworkCore.Extensions;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -21,14 +25,49 @@ namespace Sample.Chat.Services
     {
         public ChatService(
             DefaultDbContext dbContext,
+            IMapper mapper,
             IUserTokenManager userTokenManager,
             IOptionsMonitor<AzureCommunicationServicesOptions> azureCommunicationServicesOptionsMonitor,
             ILoggerFactory loggerFactory)
         {
             this.dbContext = dbContext;
+            this.mapper = mapper;
             this.userTokenManager = userTokenManager;
             azureCommunicationServicesOptions = azureCommunicationServicesOptionsMonitor.CurrentValue ?? throw new Exception("Azure Communication Service configuration is invalid.");
             logger = loggerFactory.CreateLogger<ChatService>();
+        }
+
+        public async Task<IPagedModel<ThreadResponseModel>> GetParticipatedThread(string email, int page = 1, int limit = 10, string keyword = "", CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                throw new ArgumentException("Email address does not allow empty", nameof(email));
+            }
+
+            var user = await dbContext.Users
+                .Include(x => x.Threads)
+                .Where(x => x.Email == email.Trim())
+                .AsNoTracking()
+                .FirstOrDefaultAsync();
+
+            if (user == null)
+            {
+                throw new Exception($"Could not find the user. ({email})");
+            }
+
+            var query =  dbContext.Threads.Include(x => x.Participants)
+                .Where(x => x.Participants.Any(p => p.UserId == user.Id));
+
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                query = query.Where(x => EF.Functions.Like(x.Topic, $"%{keyword}%"));
+            }
+
+            var result  = await query.AsNoTracking()
+               .Select(x => mapper.Map<ThreadResponseModel>(x))
+               .ToPagedModelAsync(page, limit, cancellationToken);
+
+            return result;            
         }
 
         /// <summary>
@@ -37,7 +76,7 @@ namespace Sample.Chat.Services
         /// <param name="model"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<int> CreateThreadAsync(CreateThreadRequestModel model, CancellationToken cancellationToken = default)
+        public async Task<CreateThreadResponseModel> CreateThreadAsync(CreateThreadRequestModel model, CancellationToken cancellationToken = default)
         {
             var chatClient = await GetModeratorChatClientAsync(cancellationToken);
 
@@ -50,7 +89,7 @@ namespace Sample.Chat.Services
             {
                 Id = createChatThreadResult.Value.ChatThread.Id,
                 Topic = createChatThreadResult.Value.ChatThread.Topic,
-                Prticipants = model.ParticipantIds.Select(userId => new Entities.ThreadParticipant
+                Participants = model.ParticipantIds.Select(userId => new Entities.ThreadParticipant
                 {
                     UserId = userId
                 }).ToList(),
@@ -60,7 +99,10 @@ namespace Sample.Chat.Services
 
             var affectedCreateThread = await dbContext.SaveChangesAsync(cancellationToken);
 
-            return affectedCreateThread;
+            return new CreateThreadResponseModel
+            {
+                Id = createChatThreadResult.Value.ChatThread.Id,
+            };
         }
 
         /// <summary>
@@ -72,7 +114,7 @@ namespace Sample.Chat.Services
         public async Task<int> AddUserToThreadAsync(AddUserToThreadRequestModel model, CancellationToken cancellationToken = default)
         {
             var currentThread = await dbContext.Threads
-                .Include(x => x.Prticipants)
+                .Include(x => x.Participants)
                 .Where(x => x.Id == model.ThreadId)
                 .FirstOrDefaultAsync(cancellationToken);
 
@@ -124,7 +166,7 @@ namespace Sample.Chat.Services
                 {
                     foreach (var userId in addUserIds)
                     {
-                        currentThread.Prticipants.Add(new Entities.ThreadParticipant
+                        currentThread.Participants.Add(new Entities.ThreadParticipant
                         {
                             UserId = userId
                         });
@@ -146,7 +188,7 @@ namespace Sample.Chat.Services
         public async Task<int> RemoveUserFromThreadAsync(RemoveUserFromThreadRequestModel model, CancellationToken cancellationToken = default)
         {
             var currentThread = await dbContext.Threads
-                .Include(x => x.Prticipants)
+                .Include(x => x.Participants)
                 .Where(x => x.Id == model.ThreadId).FirstOrDefaultAsync(cancellationToken);
 
             if (currentThread == null)
@@ -184,10 +226,10 @@ namespace Sample.Chat.Services
                 {
                     foreach (var userId in removeUserIds)
                     {
-                        var userToRemove = currentThread.Prticipants.Where(x => x.UserId == userId).FirstOrDefault();
+                        var userToRemove = currentThread.Participants.Where(x => x.UserId == userId).FirstOrDefault();
                         if (userToRemove != null)
                         {
-                            currentThread.Prticipants.Remove(userToRemove);
+                            currentThread.Participants.Remove(userToRemove);
                         }
                     }
 
@@ -290,13 +332,12 @@ namespace Sample.Chat.Services
             return response.Value.Id;
         }
 
-
         private async Task<bool> IsParticipant(string threadId, string userId, CancellationToken cancellationToken = default)
         {
             return await dbContext.Threads
-                .Include(x => x.Prticipants)
+                .Include(x => x.Participants)
                 .Where(x => x.Id == threadId)
-                .Where(x => x.Prticipants.Any(y => y.UserId == userId))
+                .Where(x => x.Participants.Any(y => y.UserId == userId))
                 .AnyAsync(cancellationToken);
         }
 
@@ -360,6 +401,7 @@ namespace Sample.Chat.Services
         }
 
         private readonly DefaultDbContext dbContext;
+        private readonly IMapper mapper;
         private readonly AzureCommunicationServicesOptions azureCommunicationServicesOptions;
         private readonly IUserTokenManager userTokenManager;
         private readonly ILogger logger;

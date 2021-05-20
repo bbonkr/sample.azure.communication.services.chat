@@ -16,6 +16,8 @@ namespace Sample.Chat.Services.Models
 
         public string Token { get; set; }
 
+        public string GatewayUrl { get; set; }
+
         public long ExpiresOn { get; set; }
     }
 
