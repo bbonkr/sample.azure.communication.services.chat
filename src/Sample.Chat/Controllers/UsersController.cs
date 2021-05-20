@@ -31,7 +31,7 @@ namespace Sample.Chat.Controllers
 
         [HttpGet]
         [Route("{email}")]
-        public async Task<IActionResult> LoginAsync(string email)
+        public async Task<IActionResult> LoginAsync([FromRoute] string email)
         {
             if (string.IsNullOrWhiteSpace(email))
             {
@@ -40,11 +40,16 @@ namespace Sample.Chat.Controllers
 
             var result = await userService.GetUserAsync(new GetUserRequestModel { Email = email });
 
+            if (result == null)
+            {
+                return StatusCode(HttpStatusCode.NotFound);
+            }
+
             return StatusCode(HttpStatusCode.OK, result);
         }
 
         [HttpPost]
-        public async Task<IActionResult> RegistAsync(CreateUserRequestModel model)
+        public async Task<IActionResult> RegistAsync([FromBody] CreateUserRequestModel model)
         {
             model.Email = model.Email?.Trim();
             model.DisplayName = model.DisplayName?.Trim();
@@ -66,7 +71,7 @@ namespace Sample.Chat.Controllers
 
         [HttpDelete]
         [Route("{email}")]
-        public async Task<IActionResult> UnregistAsync(string email)
+        public async Task<IActionResult> UnregistAsync([FromRoute] string email)
         {
             if (string.IsNullOrWhiteSpace(email))
             {
