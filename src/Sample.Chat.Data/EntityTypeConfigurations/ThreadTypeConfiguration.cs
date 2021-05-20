@@ -10,7 +10,7 @@ namespace Sample.Chat.Data.EntityTypeConfigurations
     {
         public void Configure(EntityTypeBuilder<Thread> builder)
         {
-            builder.ToTable("Thread");
+            builder.ToTable(nameof(Thread));
 
             builder.HasKey(x => x.Id);
 

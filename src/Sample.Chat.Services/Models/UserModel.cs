@@ -21,13 +21,16 @@ namespace Sample.Chat.Services.Models
 
     public class CreateUserRequestModel
     {
+    
         public string Email { get; set; }
 
+ 
         public string DisplayName { get; set; }
     }
 
     public class GetUserRequestModel
     {
+     
         public string Email { get; set; }
     }
 }

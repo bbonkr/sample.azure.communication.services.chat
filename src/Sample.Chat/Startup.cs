@@ -35,7 +35,7 @@ namespace Sample.Chat
             var connectionString = Configuration.GetConnectionString("Default");
 
             services.ConfigureAppOptions(Configuration);
-
+            
             services.AddChatServices(Configuration);
 
             services.AddDbContext<DefaultDbContext>(options =>

@@ -17,6 +17,8 @@ namespace Sample.Chat.Data
 
         public DbSet<Thread> Threads { get; set; }
 
+        public DbSet<Attachment> Attachments { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfigurationsFromAssembly(this.GetType().Assembly);

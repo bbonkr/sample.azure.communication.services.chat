@@ -17,7 +17,7 @@ using Sample.Chat.Services.Models;
 
 namespace Sample.Chat.Services
 {
-    public class ChatService
+    public class ChatService : IChatService
     {
         public ChatService(
             DefaultDbContext dbContext,
@@ -31,9 +31,15 @@ namespace Sample.Chat.Services
             logger = loggerFactory.CreateLogger<ChatService>();
         }
 
+        /// <summary>
+        /// Create chat thread
+        /// </summary>
+        /// <param name="model"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public async Task<int> CreateThreadAsync(CreateThreadRequestModel model, CancellationToken cancellationToken = default)
         {
-            var chatClient = await GetChatClient(cancellationToken);
+            var chatClient = await GetModeratorChatClientAsync(cancellationToken);
 
             var createChatThreadResult = await chatClient.CreateChatThreadAsync(
                 model.Topic,
@@ -57,7 +63,13 @@ namespace Sample.Chat.Services
             return affectedCreateThread;
         }
 
-        public async Task<int> AddUserAsync(AddUserToThreadRequestModel model, CancellationToken cancellationToken = default)
+        /// <summary>
+        /// Participate in the thread
+        /// </summary>
+        /// <param name="model"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task<int> AddUserToThreadAsync(AddUserToThreadRequestModel model, CancellationToken cancellationToken = default)
         {
             var currentThread = await dbContext.Threads
                 .Include(x => x.Prticipants)
@@ -67,23 +79,25 @@ namespace Sample.Chat.Services
             if (currentThread == null)
             {
                 logger.LogWarning($"Could not find the thread. (ThreadId: {model.ThreadId})");
-             
+
                 return 0;
             }
 
-            var chatClient = await GetChatClient(cancellationToken);
+            var chatClient = await GetModeratorChatClientAsync(cancellationToken);
 
             var chatThreadClient = chatClient.GetChatThreadClient(model.ThreadId);
 
-            var threadProperties = await chatThreadClient.GetPropertiesAsync();
+            var threadProperties = await chatThreadClient.GetPropertiesAsync(cancellationToken);
 
-            var usersToAdd = dbContext.Users.Where(x => model.ParticipantIds.Contains(x.Id)).AsNoTracking();
+            var usersToAdd = await dbContext.Users.Where(x => model.ParticipantIds.Contains(x.Id))
+                .AsNoTracking()
+                .ToListAsync(cancellationToken);
 
             var addUserIds = new List<string>();
 
-            foreach(var userId in model.ParticipantIds)
+            foreach (var userId in model.ParticipantIds)
             {
-                var user = await usersToAdd.Where(x => x.Id == userId).FirstOrDefaultAsync(cancellationToken);
+                var user = usersToAdd.Where(x => x.Id == userId).FirstOrDefault();
                 if (user != null)
                 {
                     var participant = new ChatParticipant(new CommunicationUserIdentifier(user.Id));
@@ -123,10 +137,16 @@ namespace Sample.Chat.Services
             return 0;
         }
 
-        public async Task<int> RemoveUserAsync(RemoveUserFromThreadRequestModel model, CancellationToken cancellationToken = default)
+        /// <summary>
+        /// Withdraw from the thread
+        /// </summary>
+        /// <param name="model"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task<int> RemoveUserFromThreadAsync(RemoveUserFromThreadRequestModel model, CancellationToken cancellationToken = default)
         {
             var currentThread = await dbContext.Threads
-                .Include(x=>x.Prticipants)
+                .Include(x => x.Prticipants)
                 .Where(x => x.Id == model.ThreadId).FirstOrDefaultAsync(cancellationToken);
 
             if (currentThread == null)
@@ -136,11 +156,11 @@ namespace Sample.Chat.Services
                 return 0;
             }
 
-            var chatClient = await GetChatClient(cancellationToken);
-            
+            var chatClient = await GetModeratorChatClientAsync(cancellationToken);
+
             var chatThreadClient = chatClient.GetChatThreadClient(model.ThreadId);
 
-            var threadProperties = await chatThreadClient.GetPropertiesAsync();
+            var threadProperties = await chatThreadClient.GetPropertiesAsync(cancellationToken);
 
             var removeUserIds = new List<string>();
 
@@ -178,23 +198,128 @@ namespace Sample.Chat.Services
             return 0;
         }
 
+        public async Task<int> WithdrawFromAllThread(string email, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                throw new ArgumentException("Email address does not allow empty", nameof(email));
+            }
+
+            var user = await dbContext.Users
+                .Include(x => x.Threads)
+                .Where(x => x.Email == email.Trim())
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (user == null)
+            {
+                throw new Exception($"Does not find the user. ({email})");
+            }
+
+
+            var chatClient = await GetUserChatClientAsync(user.Id, cancellationToken);
+
+            var processed = 0;
+
+            foreach (var thread in user.Threads)
+            {
+                try
+                {
+                    var chatThreadClient = chatClient.GetChatThreadClient(thread.ThreadId);
+                    await chatThreadClient.RemoveParticipantAsync(new CommunicationUserIdentifier(user.Id), cancellationToken);
+
+                    processed++;
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, $"Error occurred while removing user to thread. (ThreadId: {thread.ThreadId} | UserId: {user.Id} )");
+                }
+            }
+
+            return processed;
+        }
+
+        /// <summary>
+        /// Verifies thread is valid.
+        /// </summary>
+        /// <param name="threadId"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public async Task<bool> IsValidThread(string threadId, CancellationToken cancellationToken = default)
         {
             return await dbContext.Threads.Where(x => x.Id == threadId).AnyAsync(cancellationToken);
         }
 
-        private async Task<ChatClient> GetChatClient(CancellationToken cancellationToken = default)
+        /// <summary>
+        /// Send the message in thread.
+        /// </summary>
+        /// <param name="model"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task<string> SendMessageAsync(SendMessageRequestModel model, CancellationToken cancellationToken = default)
+        {
+            if (!(await IsValidThread(model.ThreadId)))
+            {
+                throw new ArgumentException($"Could not find the thread. (${model.ThreadId})", nameof(model.ThreadId));
+            }
+
+            if (!(await IsParticipant(model.ThreadId, model.SenderId, cancellationToken)))
+            {
+                throw new Exception("Could not send message because did not participate in the thread.");
+            }
+
+            var user = await dbContext.Users
+            .Where(x => x.Id == model.SenderId)
+            .AsNoTracking()
+            .FirstOrDefaultAsync(cancellationToken);
+
+            if (user == null)
+            {
+                throw new ArgumentException($"Could not find the user. ({model.SenderId})", nameof(model.SenderId));
+            }
+
+            var chatClient = await GetUserChatClientAsync(model.SenderId, cancellationToken);
+
+            var chatThreadClient = chatClient.GetChatThreadClient(model.ThreadId);
+
+            var threadProperties = await chatThreadClient.GetPropertiesAsync(cancellationToken);
+
+            var chatMessageType = model.ContentType == ChatContentType.Html ? ChatMessageType.Html : ChatMessageType.Text;
+
+            var response = await chatThreadClient.SendMessageAsync(model.Content, chatMessageType, user.DisplayName, cancellationToken);
+
+            return response.Value.Id;
+        }
+
+
+        private async Task<bool> IsParticipant(string threadId, string userId, CancellationToken cancellationToken = default)
+        {
+            return await dbContext.Threads
+                .Include(x => x.Prticipants)
+                .Where(x => x.Id == threadId)
+                .Where(x => x.Prticipants.Any(y => y.UserId == userId))
+                .AnyAsync(cancellationToken);
+        }
+
+        private async Task<ChatClient> GetUserChatClientAsync(string userId, CancellationToken cancellationToken = default)
+        {
+            var tokenResult = await userTokenManager.GenerateTokenAsync(azureCommunicationServicesOptions.ConnectionString, userId, cancellationToken);
+            var token = tokenResult.Token;
+
+            return GetChatClient(token);
+        }
+
+        private async Task<ChatClient> GetModeratorChatClientAsync(CancellationToken cancellationToken = default)
         {
             var moderator = await dbContext.Users
-               .Where(x => x.IsModerator)
-               .AsNoTracking()
-               .FirstOrDefaultAsync(cancellationToken);
+              .Where(x => x.IsModerator)
+              .AsNoTracking()
+              .FirstOrDefaultAsync(cancellationToken);
 
             var token = string.Empty;
 
             if (moderator == null)
             {
-                var tokenResult = await userTokenManager.GenerateTokenAsync(azureCommunicationServicesOptions.ConnectionString);
+                var tokenResult = await userTokenManager.GenerateTokenAsync(azureCommunicationServicesOptions.ConnectionString, cancellationToken);
 
                 moderator = new Entities.User
                 {
@@ -217,14 +342,19 @@ namespace Sample.Chat.Services
             }
             else
             {
-                var tokenResult = await userTokenManager.GenerateTokenAsync(azureCommunicationServicesOptions.ConnectionString, moderator.Id);
+                var tokenResult = await userTokenManager.GenerateTokenAsync(azureCommunicationServicesOptions.ConnectionString, moderator.Id, cancellationToken);
                 token = tokenResult.Token;
             }
 
+            return GetChatClient(token);
+        }
+
+        private ChatClient GetChatClient(string token)
+        {
             var chatClient = new ChatClient(
             new Uri(azureCommunicationServicesOptions.GatewayUrl),
             new Azure.Communication.CommunicationTokenCredential(token)
-        );
+            );
 
             return chatClient;
         }
@@ -233,5 +363,11 @@ namespace Sample.Chat.Services
         private readonly AzureCommunicationServicesOptions azureCommunicationServicesOptions;
         private readonly IUserTokenManager userTokenManager;
         private readonly ILogger logger;
+    }
+
+    public enum ChatContentType
+    {
+        Text,
+        Html,
     }
 }

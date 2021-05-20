@@ -14,12 +14,12 @@ using Sample.Chat.Services.Models;
 
 namespace Sample.Chat.Services
 {
-    public class UserService
+    public class UserService : IUserService
     {
         public UserService(
-            DefaultDbContext dbContext, 
-            IMapper mapper, 
-            IUserTokenManager userTokenManager, 
+            DefaultDbContext dbContext,
+            IMapper mapper,
+            IUserTokenManager userTokenManager,
             IOptionsMonitor<AzureCommunicationServicesOptions> azureCommunicationServicesOptionsMonitor)
         {
             this.dbContext = dbContext;
@@ -29,13 +29,52 @@ namespace Sample.Chat.Services
         }
 
 
-        public Task<UserModel> CreateUserAsync(CreateUserRequestModel model)
+        public async Task<UserModel> CreateUserAsync(CreateUserRequestModel model, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            if (string.IsNullOrEmpty(model.Email))
+            {
+                throw new ArgumentException("Please provide your email address.", nameof(model.Email));
+            }
+
+            if (string.IsNullOrEmpty(model.DisplayName))
+            {
+                throw new ArgumentException("Please provide your display name.", nameof(model.DisplayName));
+            }
+
+            if (await dbContext.Users.Where(x => x.Email == model.Email).AnyAsync(cancellationToken))
+            {
+                throw new Exception($"Could not register using the email address. ({model.Email})");
+            }
+
+            var token = await userTokenManager.GenerateTokenAsync(azureCommunicationServicesOptions.ConnectionString, cancellationToken);
+
+            var user = new User
+            {
+                Id = token.User.Id,
+                Email = model.Email.Trim(),
+                DisplayName = model.DisplayName.Trim(),
+                IsBot = false,
+                IsModerator = false,
+            };
+
+            dbContext.Users.Add(user);
+
+            await dbContext.SaveChangesAsync(cancellationToken);
+
+            var response = mapper.Map<UserModel>(user);
+
+            response.Token = token.AccessToken.Token;
+
+            return response;
         }
 
         public async Task<UserModel> GetUserAsync(GetUserRequestModel model, CancellationToken cancellationToken = default)
         {
+            if (string.IsNullOrEmpty(model.Email))
+            {
+                throw new ArgumentException("Please provide your email address.", nameof(model.Email));
+            }
+
             var user = await dbContext.Users
                 .Where(x => x.Email == model.Email)
                 .AsNoTracking()
@@ -45,7 +84,7 @@ namespace Sample.Chat.Services
             if (user != null)
             {
                 var result = await userTokenManager.GenerateTokenAsync(azureCommunicationServicesOptions.ConnectionString, user.Id);
-             
+
                 user.Token = result.Token;
                 user.ExpiresOn = result.ExpiresOn.Ticks;
             }
@@ -55,6 +94,11 @@ namespace Sample.Chat.Services
 
         public async Task<UserModel> RefreshTokenAsync(GetUserRequestModel model, CancellationToken cancellationToken = default)
         {
+            if (string.IsNullOrEmpty(model.Email.Trim()))
+            {
+                throw new ArgumentException("Please provide your email address.", nameof(model.Email));
+            }
+
             var user = await dbContext.Users
                .Where(x => x.Email == model.Email)
                .AsNoTracking()
@@ -82,12 +126,6 @@ namespace Sample.Chat.Services
             if (user == null)
             {
                 return 0;
-            }
-
-            foreach (var thread in user.Threads)
-            {
-                // TODO: Leave related threads and remove records.
-                //thread.Thread.Id
             }
 
             dbContext.Users.Remove(user);
