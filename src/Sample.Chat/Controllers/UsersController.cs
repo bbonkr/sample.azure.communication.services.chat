@@ -29,8 +29,14 @@ namespace Sample.Chat.Controllers
             this.chatService = chatService;
         }
 
+        /// <summary>
+        /// Get user info
+        /// </summary>
+        /// <param name="email"></param>
+        /// <returns></returns>
         [HttpGet]
         [Route("{email}")]
+        [Produces(typeof(kr.bbon.AspNetCore.Models.ApiResponseModel<UserModel>))]
         public async Task<IActionResult> LoginAsync([FromRoute] string email)
         {
             if (string.IsNullOrWhiteSpace(email))
@@ -42,13 +48,19 @@ namespace Sample.Chat.Controllers
 
             if (result == null)
             {
-                return StatusCode(HttpStatusCode.NotFound);
+                return StatusCode(HttpStatusCode.NotFound, $"Could not find the user. ({email})");
             }
 
             return StatusCode(HttpStatusCode.OK, result);
         }
 
+        /// <summary>
+        /// Register user
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
         [HttpPost]
+        [Produces(typeof(kr.bbon.AspNetCore.Models.ApiResponseModel<UserModel>))]
         public async Task<IActionResult> RegistAsync([FromBody] CreateUserRequestModel model)
         {
             model.Email = model.Email?.Trim();
@@ -69,8 +81,14 @@ namespace Sample.Chat.Controllers
             return StatusCode(HttpStatusCode.Created, result);
         }
 
+        /// <summary>
+        /// Unregister user
+        /// </summary>
+        /// <param name="email"></param>
+        /// <returns></returns>
         [HttpDelete]
         [Route("{email}")]
+        [Produces(typeof(kr.bbon.AspNetCore.Models.ApiResponseModel<bool>))]
         public async Task<IActionResult> UnregistAsync([FromRoute] string email)
         {
             if (string.IsNullOrWhiteSpace(email))
@@ -91,7 +109,7 @@ namespace Sample.Chat.Controllers
                 return StatusCode(HttpStatusCode.BadRequest, "Email address is invalid.");
             }
 
-            return StatusCode(HttpStatusCode.OK, "Done.");
+            return StatusCode(HttpStatusCode.OK, "Done.", result > 0);
         }
 
 

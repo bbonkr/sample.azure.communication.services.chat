@@ -240,6 +240,43 @@ namespace Sample.Chat.Services
             return 0;
         }
 
+        /// <summary>
+        /// Delete the thread
+        /// </summary>
+        /// <param name="model"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task<int> DeleteThreadAsync(DeleteThreadRequest model, CancellationToken cancellationToken = default)
+        {
+            var thread = await dbContext.Threads
+                 .Include(x => x.Participants)
+                 .Where(x => x.Id == model.ThreadId)
+                 .FirstOrDefaultAsync(cancellationToken);
+
+            if (thread == null)
+            {
+                throw new Exception($"Could not find the thread. ({model.ThreadId})");
+            }
+
+            if (thread.Participants.Count > 0 && !model.Force)
+            {
+                throw new Exception($"Could not delete the thread, because participants exist.");
+            }
+
+            foreach (var participant in thread.Participants)
+            {
+                thread.Participants.Remove(participant);
+            }
+
+            dbContext.Threads.Remove(thread);
+            var affected = await dbContext.SaveChangesAsync(cancellationToken);
+
+            var chatClient = await GetModeratorChatClientAsync(cancellationToken);
+            var response = await chatClient.DeleteChatThreadAsync(model.ThreadId, cancellationToken);
+
+            return affected;
+        }
+
         public async Task<int> WithdrawFromAllThread(string email, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(email))

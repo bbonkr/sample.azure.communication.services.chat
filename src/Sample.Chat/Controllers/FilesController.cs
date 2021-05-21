@@ -24,8 +24,14 @@ namespace Sample.Chat.Controllers
             this.fileService = fileService;
         }
 
+        /// <summary>
+        /// Get file content
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpGet]
         [Route("{id:guid}")]
+        [Produces(typeof(FileContentResult))]
         public async Task<IActionResult> GetFileAsync(Guid id)
         {
             var response = await fileService.GetFileContentAsync(id);

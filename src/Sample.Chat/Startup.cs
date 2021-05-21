@@ -46,7 +46,7 @@ namespace Sample.Chat
                 });
             });
 
-            services.AddControllers();
+            services.AddControllersWithViews();
             
             services.AddApiVersioningAndSwaggerGen(defaultVersion);
         }
@@ -67,6 +67,7 @@ namespace Sample.Chat
             }
             
             app.UseHttpsRedirection();
+            app.UseStaticFiles();
 
             app.UseRouting();
 
@@ -75,6 +76,7 @@ namespace Sample.Chat
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapFallbackToController("Index", "Home");
             });
         }
     }

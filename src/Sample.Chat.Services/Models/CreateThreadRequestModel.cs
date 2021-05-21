@@ -41,4 +41,11 @@ namespace Sample.Chat.Services.Models
     {
         public string DisplayName { get; set; }
     }
+
+    public class DeleteThreadRequest
+    {
+        public string ThreadId { get; set; }
+
+        public bool Force { get; set; } = false;
+    }
 }

@@ -13,6 +13,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 using System.Threading;
+using kr.bbon.AspNetCore.Models;
+using kr.bbon.EntityFrameworkCore.Extensions;
 
 namespace Sample.Chat.Controllers
 {
@@ -31,8 +33,17 @@ namespace Sample.Chat.Controllers
             this.fileService = fileService;
         }
 
+        /// <summary>
+        /// Get threads
+        /// </summary>
+        /// <param name="email"></param>
+        /// <param name="page"></param>
+        /// <param name="limit"></param>
+        /// <param name="keyword"></param>
+        /// <returns></returns>
         [HttpGet]
-        [Route("{email}")]
+        [Route("{email}/threads")]
+        [Produces(typeof(ApiResponseModel<IPagedModel<ThreadResponseModel>>))]
         public async Task<IActionResult> GetThreads([FromRoute] string email, [FromQuery] int page = 1, [FromQuery] int limit = 10, [FromQuery] string keyword = "")
         {
             var threads = await chatService.GetParticipatedThread(email, page, limit, keyword);
@@ -40,8 +51,14 @@ namespace Sample.Chat.Controllers
             return StatusCode(HttpStatusCode.OK, threads);
         }
 
+        /// <summary>
+        /// Create thread
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
         [HttpPost]
         [Route("threads")]
+        [Produces(typeof(ApiResponseModel<CreateThreadResponseModel>))]
         public async Task<IActionResult> CreateThreadAsync([FromBody] CreateThreadRequestModel model)
         {
             var result = await chatService.CreateThreadAsync(model);
@@ -49,36 +66,84 @@ namespace Sample.Chat.Controllers
             return StatusCode(HttpStatusCode.Created, result);
         }
 
+        /// <summary>
+        /// Join to thread
+        /// </summary>
+        /// <param name="threadId"></param>
+        /// <param name="model"></param>
+        /// <returns></returns>
         [HttpPatch]
-        [Route("threads/{id}")]
-        public async Task<IActionResult> ParticipateAsync([FromRoute] string id, [FromBody] AddUserToThreadRequestModel model)
+        [Route("threads/{threadId}/join")]
+        [Produces(typeof(ApiResponseModel<bool>))]
+        public async Task<IActionResult> ParticipateAsync([FromRoute] string threadId, [FromBody] AddUserToThreadRequestModel model)
         {
             var result = await chatService.AddUserToThreadAsync(model);
 
-            return StatusCode(HttpStatusCode.OK);
+            return StatusCode(HttpStatusCode.OK, result > 0);
         }
 
-        [HttpDelete]
-        [Route("threads/{id}")]
-        public async Task<IActionResult> LeaveAsync([FromRoute] string id, [FromBody] RemoveUserFromThreadRequestModel model)
+        /// <summary>
+        /// Leave from thread
+        /// </summary>
+        /// <param name="threadId"></param>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPatch]
+        [Route("threads/{threadId}/leave")]
+        [Produces(typeof(ApiResponseModel<bool>))]
+        public async Task<IActionResult> LeaveAsync([FromRoute] string threadId, [FromBody] RemoveUserFromThreadRequestModel model)
         {
             var result = await chatService.RemoveUserFromThreadAsync(model);
 
-            return StatusCode(HttpStatusCode.OK);
+            return StatusCode(HttpStatusCode.OK, result > 0);
         }
 
+        /// <summary>
+        /// Delete the thread
+        /// </summary>
+        /// <param name="threadId"></param>
+        /// <returns></returns>
+        [HttpDelete]
+        [Route("thread/{threadId}")]
+        [Produces(typeof(ApiResponseModel<bool>))]
+        public async Task<IActionResult> DeleteThread([FromRoute] string threadId)
+        {
+            var result = await chatService.DeleteThreadAsync(new DeleteThreadRequest
+            {
+                ThreadId = threadId,
+                Force = false,
+            });
+
+            return StatusCode(HttpStatusCode.OK, result > 0);
+        }
+
+        /// <summary>
+        /// Send message to thread
+        /// </summary>
+        /// <param name="threadId"></param>
+        /// <param name="model"></param>
+        /// <returns></returns>
         [HttpPost]
-        [Route("threads/{id}/messages")]
-        public async Task<IActionResult> SendMessageAsync([FromRoute] string id, [FromBody] SendMessageRequestModel model)
+        [Route("threads/{threadId}/messages")]
+        [Produces(typeof(ApiResponseModel<bool>))]
+        public async Task<IActionResult> SendMessageAsync([FromRoute] string threadId, [FromBody] SendMessageRequestModel model)
         {
             var result = await chatService.SendMessageAsync(model);
 
-            return StatusCode(HttpStatusCode.OK);
+            return StatusCode(HttpStatusCode.OK, !string.IsNullOrEmpty(result));
         }
 
+        /// <summary>
+        /// Send file to thread
+        /// </summary>
+        /// <param name="threadId"></param>
+        /// <param name="model"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         [HttpPost]
-        [Route("thread/{id}/files")]
-        public async Task<IActionResult> SendFileAsync([FromRoute] string id, [FromBody] SendFileRequestModel model, CancellationToken cancellationToken = default)
+        [Route("thread/{threadId}/files")]
+        [Produces(typeof(ApiResponseModel<bool>))]
+        public async Task<IActionResult> SendFileAsync([FromRoute] string threadId, [FromBody] SendFileRequestModel model, CancellationToken cancellationToken = default)
         {
             var requests = new List<FileSavedRequestModel>();
 
@@ -99,6 +164,7 @@ namespace Sample.Chat.Controllers
 
             var savedResponse = await fileService.SaveAsync(requests, cancellationToken);
 
+            var count = 0;
             foreach (var response in savedResponse)
             {
                 await chatService.SendMessageAsync(new SendMessageRequestModel
@@ -109,9 +175,11 @@ namespace Sample.Chat.Controllers
                     ContentType = ChatContentType.Html,
 
                 });
+
+                count++;
             }
 
-            return StatusCode(HttpStatusCode.OK);
+            return StatusCode(HttpStatusCode.OK, count > 0);
         }
 
 
