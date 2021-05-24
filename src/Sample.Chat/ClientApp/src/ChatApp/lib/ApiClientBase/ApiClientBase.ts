@@ -1,5 +1,4 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
-import { ApiResponseModelBase } from '../../models/ApiResponseModelBase';
 
 export abstract class ApiClientBase {
     protected getBaseUrl(): string {
