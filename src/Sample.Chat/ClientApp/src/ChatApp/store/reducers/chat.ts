@@ -71,10 +71,9 @@ export const hasMoreThreads = createReducer<boolean, RootAction>(true)
         (state, action) => true,
     );
 
-export const chatError = createReducer<
-    ApiResponseModel | undefined,
-    RootAction
->(undefined)
+export const chatError = createReducer<ApiResponseModel | null, RootAction>(
+    null,
+)
     .handleAction(
         [
             rootAction.chat.getThreads.request,
@@ -92,7 +91,7 @@ export const chatError = createReducer<
             rootAction.chat.sendFile.request,
             rootAction.chat.sendFile.success,
         ],
-        (_, __) => undefined,
+        (_, __) => null,
     )
     .handleAction(
         [

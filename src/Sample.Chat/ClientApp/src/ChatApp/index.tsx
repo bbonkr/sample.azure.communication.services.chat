@@ -1,9 +1,10 @@
 import React from 'react';
 import ReactDom from 'react-dom';
+import { App } from './components/App';
 
 ReactDom.render(
     <React.StrictMode>
-        <div>app</div>
+        <App />
     </React.StrictMode>,
     document.querySelector('#app'),
 );

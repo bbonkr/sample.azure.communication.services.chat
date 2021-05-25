@@ -21,12 +21,15 @@ namespace Sample.Chat
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        public Startup(IConfiguration configuration, IWebHostEnvironment webHostEnvironment)
         {
             Configuration = configuration;
+            WebHostEnvironment = webHostEnvironment;
         }
 
         public IConfiguration Configuration { get; }
+
+        public IWebHostEnvironment WebHostEnvironment { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
@@ -49,6 +52,8 @@ namespace Sample.Chat
             services.AddControllersWithViews();
             
             services.AddApiVersioningAndSwaggerGen(defaultVersion);
+
+         
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -64,6 +69,8 @@ namespace Sample.Chat
             {
                 app.UseDeveloperExceptionPage();
                 app.UseSwaggerUIWithApiVersioning();
+
+            
             }
             
             app.UseHttpsRedirection();

@@ -25,9 +25,7 @@ export const isLoadingUser = createReducer<boolean, RootAction>(false)
         (_, __) => false,
     );
 
-export const user = createReducer<GetUserResponseModel | undefined, RootAction>(
-    undefined,
-)
+export const user = createReducer<GetUserResponseModel | null, RootAction>(null)
     .handleAction(
         [rootAction.user.loadUser.success, rootAction.user.createUser.success],
         (state, action) => action.payload.data,
@@ -44,15 +42,18 @@ export const user = createReducer<GetUserResponseModel | undefined, RootAction>(
             rootAction.user.deleteUser.failure,
             rootAction.user.clearUser,
         ],
-        (_, __) => undefined,
+        (_, __) => null,
     );
 
-export const userError = createReducer<
-    ApiResponseModel | undefined,
-    RootAction
->(undefined)
+export const userError = createReducer<ApiResponseModel | null, RootAction>(
+    null,
+)
     .handleAction(
-        [rootAction.user.loadUser.failure],
+        [
+            rootAction.user.loadUser.failure,
+            rootAction.user.createUser.failure,
+            rootAction.user.deleteUser.failure,
+        ],
         (_, action) => action.payload,
     )
     .handleAction(
@@ -63,8 +64,9 @@ export const userError = createReducer<
             rootAction.user.createUser.success,
             rootAction.user.deleteUser.request,
             rootAction.user.deleteUser.success,
+            rootAction.user.clearUser,
         ],
-        (_, __) => undefined,
+        (_, __) => null,
     );
 
 export const userState = combineReducers({

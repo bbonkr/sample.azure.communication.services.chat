@@ -374,3 +374,4 @@ FodyWeavers.xsd
 appsettings.Development.json
 
 Attachments/
+**/wwwroot/bundles/
