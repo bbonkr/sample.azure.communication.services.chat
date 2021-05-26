@@ -1,5 +1,7 @@
 import { combineReducers } from 'redux';
 import { createReducer } from 'typesafe-actions';
+import { ChatClient } from '@azure/communication-chat';
+import { AzureCommunicationTokenCredential } from '@azure/communication-common';
 import { ApiResponseModel } from '../../models';
 import { GetThreadResponseModel } from '../../models/ChatClient';
 import { rootAction, RootAction } from '../actions';
@@ -106,11 +108,35 @@ export const chatError = createReducer<ApiResponseModel | null, RootAction>(
         (state, action) => action.payload,
     );
 
+const chatClient = createReducer<ChatClient | null, RootAction>(null)
+    .handleAction(
+        [rootAction.user.loadUser.success, rootAction.user.createUser.success],
+        (state, action) => {
+            const { token, gatewayUrl } = action.payload.data;
+            const tokenCredential = new AzureCommunicationTokenCredential(
+                token,
+            );
+            const client = new ChatClient(gatewayUrl, tokenCredential);
+            return client;
+        },
+    )
+    .handleAction(
+        [
+            rootAction.user.loadUser.request,
+            rootAction.user.loadUser.failure,
+            rootAction.user.createUser.request,
+            rootAction.user.createUser.failure,
+            rootAction.user.clearUser,
+        ],
+        (_, __) => null,
+    );
+
 export const chatState = combineReducers({
     threads,
     isLoadingThreads,
     hasMoreThreads,
     chatError,
+    chatClient,
 });
 
 export type ChatState = ReturnType<typeof chatState>;

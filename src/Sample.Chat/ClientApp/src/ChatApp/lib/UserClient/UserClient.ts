@@ -1,3 +1,4 @@
+import axios, { AxiosError } from 'axios';
 import {
     GetUserRequestModel,
     GetUserApiResponseModel,
@@ -18,11 +19,14 @@ export class UserClient extends ApiClientBase {
     ): Promise<GetUserApiResponseModel> {
         const url = `${this.getBaseUrl()}/${encodeURIComponent(model.email)}`;
 
-        const response = await this.getClient().get<GetUserApiResponseModel>(
-            url,
-        );
+        try {
+            const response =
+                await this.getClient().get<GetUserApiResponseModel>(url);
 
-        return this.returnsModelIfSucceed(response);
+            return this.returnsModelIfSucceed(response);
+        } catch (err) {
+            throw this.throwsManagedError(err);
+        }
     }
 
     public async createUser(
@@ -30,10 +34,17 @@ export class UserClient extends ApiClientBase {
     ): Promise<CreateUserApiResponseModel> {
         const url = `${this.getBaseUrl()}`;
 
-        const response =
-            await this.getClient().post<CreateUserApiResponseModel>(url, model);
-
-        return this.returnsModelIfSucceed(response);
+        try {
+            const response =
+                await this.getClient().post<CreateUserApiResponseModel>(
+                    url,
+                    model,
+                );
+            console.info('res', response);
+            return this.returnsModelIfSucceed(response);
+        } catch (err) {
+            throw this.throwsManagedError(err);
+        }
     }
 
     public async deleteUser(
@@ -41,11 +52,14 @@ export class UserClient extends ApiClientBase {
     ): Promise<DeleteUserApiResponse> {
         const url = `${this.getBaseUrl()}/${encodeURIComponent(model.email)}`;
 
-        const response = await this.getClient().delete<DeleteUserApiResponse>(
-            url,
-        );
+        try {
+            const response =
+                await this.getClient().delete<DeleteUserApiResponse>(url);
 
-        return this.returnsModelIfSucceed(response);
+            return this.returnsModelIfSucceed(response);
+        } catch (err) {
+            throw this.throwsManagedError(err);
+        }
     }
 
     protected getBaseUrl(): string {

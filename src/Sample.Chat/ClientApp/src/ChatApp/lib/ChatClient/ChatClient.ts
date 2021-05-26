@@ -30,11 +30,14 @@ export class ChatClient extends ApiClientBase {
             model.limit
         }&keyword=${encodeURIComponent(model.keyword ?? '')}`;
 
-        const response = await this.getClient().get<GetThreadsApiResponseModel>(
-            url,
-        );
+        try {
+            const response =
+                await this.getClient().get<GetThreadsApiResponseModel>(url);
 
-        return this.returnsModelIfSucceed(response);
+            return this.returnsModelIfSucceed(response);
+        } catch (err) {
+            throw this.throwsManagedError(err);
+        }
     }
 
     public async createThread(
@@ -42,13 +45,17 @@ export class ChatClient extends ApiClientBase {
     ): Promise<CreateThreadApiResponseModel> {
         const url = `${this.getBaseUrl()}/threads`;
 
-        const response =
-            await this.getClient().post<CreateThreadApiResponseModel>(
-                url,
-                model,
-            );
+        try {
+            const response =
+                await this.getClient().post<CreateThreadApiResponseModel>(
+                    url,
+                    model,
+                );
 
-        return this.returnsModelIfSucceed(response);
+            return this.returnsModelIfSucceed(response);
+        } catch (err) {
+            throw this.throwsManagedError(err);
+        }
     }
 
     public async joinToThread(
@@ -56,9 +63,13 @@ export class ChatClient extends ApiClientBase {
     ): Promise<JoinThreadApiResponseModel> {
         const url = `${this.getBaseUrl()}/threads/${model.threadId}/join`;
 
-        const response = await this.getClient().patch(url, model);
+        try {
+            const response = await this.getClient().patch(url, model);
 
-        return this.returnsModelIfSucceed(response);
+            return this.returnsModelIfSucceed(response);
+        } catch (err) {
+            throw this.throwsManagedError(err);
+        }
     }
 
     public async leaveFromThread(
@@ -66,9 +77,13 @@ export class ChatClient extends ApiClientBase {
     ): Promise<LeaveThreadApiResponseModel> {
         const url = `${this.getBaseUrl()}/threads/${model.threadId}/leave`;
 
-        const response = await this.getClient().patch(url, model);
+        try {
+            const response = await this.getClient().patch(url, model);
 
-        return this.returnsModelIfSucceed(response);
+            return this.returnsModelIfSucceed(response);
+        } catch (err) {
+            throw this.throwsManagedError(err);
+        }
     }
 
     public async deleteThread(
@@ -76,9 +91,13 @@ export class ChatClient extends ApiClientBase {
     ): Promise<DeleteThreadApiResponseModel> {
         const url = `${this.getBaseUrl()}/threads/${model.threadId}`;
 
-        const response = await this.getClient().delete(url);
+        try {
+            const response = await this.getClient().delete(url);
 
-        return this.returnsModelIfSucceed(response);
+            return this.returnsModelIfSucceed(response);
+        } catch (err) {
+            throw this.throwsManagedError(err);
+        }
     }
 
     public async sendMessage(
@@ -86,9 +105,13 @@ export class ChatClient extends ApiClientBase {
     ): Promise<SendMessageApiResponseModel> {
         const url = `${this.getBaseUrl}/threads/${model.threadId}/messages`;
 
-        const response = await this.getClient().post(url, model);
+        try {
+            const response = await this.getClient().post(url, model);
 
-        return this.returnsModelIfSucceed(response);
+            return this.returnsModelIfSucceed(response);
+        } catch (err) {
+            throw this.throwsManagedError(err);
+        }
     }
 
     public async sendFile(
@@ -96,9 +119,13 @@ export class ChatClient extends ApiClientBase {
     ): Promise<SendFileApiResponseMode> {
         const url = `${this.getBaseUrl}/threads/${model.threadId}/files`;
 
-        const response = await this.getClient().post(url, model);
+        try {
+            const response = await this.getClient().post(url, model);
 
-        return this.returnsModelIfSucceed(response);
+            return this.returnsModelIfSucceed(response);
+        } catch (err) {
+            throw this.throwsManagedError(err);
+        }
     }
 
     protected getBaseUrl(): string {

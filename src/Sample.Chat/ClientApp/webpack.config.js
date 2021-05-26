@@ -9,7 +9,7 @@ const isDevelpoment = () => {
 
 module.exports = {
     mode: isDevelpoment() ? 'development' : environmentName,
-    // devtool: isDevelpoment() ? 'inline-source-map' : 'hidden-source-map',
+    devtool: isDevelpoment() ? 'inline-source-map' : 'hidden-source-map',
     resolve: {
         extensions: ['.ts', '.tsx', '.js', '.jsx'],
     },

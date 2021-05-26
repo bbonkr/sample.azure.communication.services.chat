@@ -12,17 +12,21 @@
     "author": "Pon Cheol Ku <dev@bbon.kr> (http://bbon.kr/)",
     "license": "MIT",
     "dependencies": {
+        "@azure/communication-chat": "^1.0.0",
+        "@azure/communication-common": "^1.0.0",
         "axios": "^0.21.1",
         "bulma": "^0.9.2",
         "react": "^17.0.2",
         "react-dom": "^17.0.2",
+        "react-helmet-async": "^1.0.9",
         "react-icons": "^4.2.0",
         "react-redux": "^7.2.4",
         "react-router-dom": "^5.2.0",
         "redux-devtools-extension": "^2.13.9",
         "redux-observable": "^1.2.0",
         "rxjs": "^6.6.6",
-        "typesafe-actions": "^5.1.0"
+        "typesafe-actions": "^5.1.0",
+        "yup": "^0.32.9"
     },
     "devDependencies": {
         "@babel/core": "^7.14.2",

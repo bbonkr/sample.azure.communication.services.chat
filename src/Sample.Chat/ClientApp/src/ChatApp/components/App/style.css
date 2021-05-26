@@ -1,0 +1,26 @@
+html {
+    overflow-y: auto;
+}
+/* body,
+#app {
+    min-height: 100vh;
+} */
+
+.is-full-width {
+    width: 100%;
+}
+
+.is-full-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.is-position-relative {
+    position: relative;
+}

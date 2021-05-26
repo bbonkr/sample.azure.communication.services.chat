@@ -1,4 +1,4 @@
-import axios, { AxiosInstance, AxiosResponse } from 'axios';
+import axios, { AxiosError, AxiosInstance, AxiosResponse } from 'axios';
 
 export abstract class ApiClientBase {
     protected getBaseUrl(): string {
@@ -15,7 +15,21 @@ export abstract class ApiClientBase {
         if (this.isSuccessResponse(response.status)) {
             return response.data;
         } else {
+            console.info('response.data', response.data);
             throw response.data;
+        }
+    }
+
+    protected throwsManagedError(err: Error | AxiosError): Error {
+        if (axios.isAxiosError(err)) {
+            const axiosError: AxiosError = err;
+
+            return (
+                axiosError.response?.data ??
+                new Error('Unhandled exception occurred.')
+            );
+        } else {
+            return err;
         }
     }
 

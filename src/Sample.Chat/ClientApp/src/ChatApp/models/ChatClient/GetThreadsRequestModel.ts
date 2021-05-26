@@ -12,6 +12,8 @@ export interface ThreadParticipantDisplayName {
     displayName: string;
 }
 
+export type ChatParticipant = ThreadParticipantDisplayName;
+
 export interface GetThreadResponseModel {
     id: string;
     topic: string;
