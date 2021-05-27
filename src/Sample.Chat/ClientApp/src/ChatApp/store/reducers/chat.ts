@@ -1,10 +1,19 @@
 import { combineReducers } from 'redux';
 import { createReducer } from 'typesafe-actions';
-import { ChatClient } from '@azure/communication-chat';
+import {
+    ChatClient,
+    ChatMessage,
+    ChatThreadClient,
+} from '@azure/communication-chat';
 import { AzureCommunicationTokenCredential } from '@azure/communication-common';
 import { ApiResponseModel } from '../../models';
-import { GetThreadResponseModel } from '../../models/ChatClient';
+import {
+    ChatParticipant,
+    GetThreadResponseModel,
+} from '../../models/ChatClient';
 import { rootAction, RootAction } from '../actions';
+import _ from 'lodash';
+import { StateObservable } from 'redux-observable';
 
 export const isLoadingThreads = createReducer<boolean, RootAction>(false)
     .handleAction(
@@ -122,6 +131,7 @@ const chatClient = createReducer<ChatClient | null, RootAction>(null)
     .handleAction(
         [rootAction.user.loadUser.success, rootAction.user.createUser.success],
         (state, action) => {
+            console.info(action.type);
             const { token, gatewayUrl } = action.payload.data;
             const tokenCredential = new AzureCommunicationTokenCredential(
                 token,
@@ -141,12 +151,101 @@ const chatClient = createReducer<ChatClient | null, RootAction>(null)
         (_, __) => null,
     );
 
+const selectedThread = createReducer<GetThreadResponseModel | null, RootAction>(
+    null,
+).handleAction(
+    [rootAction.chat.selectThread],
+    (state, action) => action.payload ?? null,
+);
+
+const messages = createReducer<ChatMessage[], RootAction>([])
+    .handleAction(
+        [rootAction.chat.sendMessage.success, rootAction.chat.sendFile.success],
+        (state, action) => {
+            console.info(
+                'redux: rootAction.chat.sendMessage.success, rootAction.chat.sendFile.success',
+                action.payload.data,
+            );
+            action.payload.data.forEach((message) => {
+                const index = state.findIndex((x) => x.id === message.id);
+                if (index < 0) {
+                    state.push(message);
+                }
+            });
+
+            return [...state];
+        },
+    )
+    .handleAction([rootAction.chat.addChatMessages], (state, action) => {
+        action.payload
+            .sort((a, b) => (a.createdOn > b.createdOn ? 1 : -1))
+            .forEach((m) => {
+                const message = state.find((x) => x.id === m.id);
+                if (!message) {
+                    state.push(m);
+                }
+            });
+
+        return [...state];
+    })
+    .handleAction([rootAction.chat.updateChatMessage], (state, action) => {
+        const index = state.findIndex((x) => x.id === action.payload.id);
+        if (index >= 0) {
+            state.splice(index, 1, action.payload);
+        }
+
+        return [...state];
+    })
+    .handleAction([rootAction.chat.deleteChatMessage], (state, action) => {
+        const index = state.findIndex((x) => x.id === action.payload.id);
+
+        if (index >= 0) {
+            state.splice(index, 1);
+        }
+
+        return [...state];
+    })
+    .handleAction([rootAction.chat.clearChatMessages], (_, __) => []);
+
+export const chatThreadClient = createReducer<
+    ChatThreadClient | null,
+    RootAction
+>(null).handleAction(
+    [rootAction.chat.setChatThreadClient],
+    (state, action) => action.payload ?? null,
+);
+
+export const participants = createReducer<ChatParticipant[], RootAction>([])
+    .handleAction([rootAction.chat.addParticipants], (state, action) => {
+        action.payload.forEach((p) => {
+            const index = state.findIndex((x) => x.id === p.id);
+            if (index < 0) {
+                state.push(p);
+            }
+        });
+
+        return [...state];
+    })
+    .handleAction([rootAction.chat.removeParticipant], (state, action) => {
+        const index = state.findIndex((x) => x.id == action.payload.id);
+        if (index >= 0) {
+            state.splice(index, 1);
+        }
+
+        return [...state];
+    })
+    .handleAction([rootAction.chat.clearParticipants], (_, __) => []);
+
 export const chatState = combineReducers({
     threads,
     isLoadingThreads,
     hasMoreThreads,
     chatError,
     chatClient,
+    selectedThread,
+    chatThreadClient,
+    participants,
+    messages,
 });
 
 export type ChatState = ReturnType<typeof chatState>;

@@ -12,7 +12,7 @@ import {
     SendMessageRequestModel,
     SendMessageApiResponseModel,
     SendFileRequestModel,
-    SendFileApiResponseMode,
+    SendFileApiResponseModel,
 } from '../../models/ChatClient';
 import { ApiClientBase } from '../ApiClientBase';
 
@@ -61,7 +61,9 @@ export class ChatClient extends ApiClientBase {
     public async joinToThread(
         model: JoinThreadRequestModel,
     ): Promise<JoinThreadApiResponseModel> {
-        const url = `${this.getBaseUrl()}/threads/${model.threadId}/join`;
+        const url = `${this.getBaseUrl()}/threads/${encodeURIComponent(
+            model.threadId,
+        )}/join`;
 
         try {
             const response = await this.getClient().patch(url, model);
@@ -75,7 +77,9 @@ export class ChatClient extends ApiClientBase {
     public async leaveFromThread(
         model: LeaveThreadRequestModel,
     ): Promise<LeaveThreadApiResponseModel> {
-        const url = `${this.getBaseUrl()}/threads/${model.threadId}/leave`;
+        const url = `${this.getBaseUrl()}/threads/${encodeURIComponent(
+            model.threadId,
+        )}/leave`;
 
         try {
             const response = await this.getClient().patch(url, model);
@@ -89,7 +93,9 @@ export class ChatClient extends ApiClientBase {
     public async deleteThread(
         model: DeleteThreadRequestModel,
     ): Promise<DeleteThreadApiResponseModel> {
-        const url = `${this.getBaseUrl()}/threads/${model.threadId}`;
+        const url = `${this.getBaseUrl()}/threads/${encodeURIComponent(
+            model.threadId,
+        )}`;
 
         try {
             const response = await this.getClient().delete(url);
@@ -103,10 +109,16 @@ export class ChatClient extends ApiClientBase {
     public async sendMessage(
         model: SendMessageRequestModel,
     ): Promise<SendMessageApiResponseModel> {
-        const url = `${this.getBaseUrl}/threads/${model.threadId}/messages`;
+        const url = `${this.getBaseUrl()}/threads/${encodeURIComponent(
+            model.threadId,
+        )}/messages`;
 
         try {
-            const response = await this.getClient().post(url, model);
+            const response =
+                await this.getClient().post<SendMessageApiResponseModel>(
+                    url,
+                    model,
+                );
 
             return this.returnsModelIfSucceed(response);
         } catch (err) {
@@ -116,11 +128,17 @@ export class ChatClient extends ApiClientBase {
 
     public async sendFile(
         model: SendFileRequestModel,
-    ): Promise<SendFileApiResponseMode> {
-        const url = `${this.getBaseUrl}/threads/${model.threadId}/files`;
+    ): Promise<SendFileApiResponseModel> {
+        const url = `${this.getBaseUrl()}/threads/${encodeURIComponent(
+            model.threadId,
+        )}/files`;
 
         try {
-            const response = await this.getClient().post(url, model);
+            const response =
+                await this.getClient().post<SendFileApiResponseModel>(
+                    url,
+                    model,
+                );
 
             return this.returnsModelIfSucceed(response);
         } catch (err) {

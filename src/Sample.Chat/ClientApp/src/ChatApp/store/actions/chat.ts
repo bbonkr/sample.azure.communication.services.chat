@@ -1,4 +1,6 @@
 import { ActionType, createAction, createAsyncAction } from 'typesafe-actions';
+import { ChatMessage, ChatThreadClient } from '@azure/communication-chat';
+import { ChatParticipant } from '../../models/ChatClient';
 import { ApiResponseModel } from '../../models';
 import {
     CreateThreadApiResponseModel,
@@ -12,7 +14,7 @@ import {
     JoinThreadRequestModel,
     LeaveThreadApiResponseModel,
     LeaveThreadRequestModel,
-    SendFileApiResponseMode,
+    SendFileApiResponseModel,
     SendFileRequestModel,
     SendMessageApiResponseModel,
     SendMessageRequestModel,
@@ -58,12 +60,43 @@ export const sendFile = createAsyncAction(
     'send-file/request',
     'send-file/success',
     'send-file/failure',
-)<SendFileRequestModel, SendFileApiResponseMode, ApiResponseModel>();
+)<SendFileRequestModel, SendFileApiResponseModel, ApiResponseModel>();
 
 export const appendThread =
     createAction('append-thread')<GetThreadResponseModel>();
 
 export const removeThread = createAction('remove-thread')<string>();
+
+export const selectThread =
+    createAction('select-thread')<GetThreadResponseModel | undefined>();
+
+export const setChatThreadClient = createAction('set-chat-thread-client')<
+    ChatThreadClient | undefined
+>();
+
+export const addParticipants = createAction('add-chat-participants')<
+    ChatParticipant[]
+>();
+export const removeParticipant = createAction('remove-chat-participant')<
+    Partial<Pick<ChatParticipant, 'id'>>
+>();
+
+export const clearParticipants = createAction('clear-chat-participants')();
+
+export const addChatMessages =
+    createAction('add-chat-messages')<ChatMessage[]>();
+
+export const updateChatMessage = createAction(
+    'update-chat-message',
+)<ChatMessage>();
+
+export const deleteChatMessage = createAction('delete-chat-message')<
+    Partial<Pick<ChatMessage, 'id'>>
+>();
+
+export const clearChatMessages = createAction('clear-chat-message')();
+
+export const clearSentMessageIds = createAction('clear-sent-message-ids')();
 
 export const chatActions = {
     getThreads,
@@ -75,6 +108,16 @@ export const chatActions = {
     sendFile,
     appendThread,
     removeThread,
+    selectThread,
+    setChatThreadClient,
+    addParticipants,
+    removeParticipant,
+    clearParticipants,
+    addChatMessages,
+    updateChatMessage,
+    deleteChatMessage,
+    clearChatMessages,
+    clearSentMessageIds,
 };
 
 export type ChatActions = ActionType<typeof chatActions>;

@@ -1,3 +1,4 @@
+import { ChatMessage } from '@azure/communication-chat';
 import { ApiResponseModel } from '../ApiResponseModel';
 import { PagedModel } from '../PagedModel';
 
@@ -9,6 +10,7 @@ export interface GetThreadsRequestModel {
 }
 
 export interface ThreadParticipantDisplayName {
+    id: string;
     displayName: string;
 }
 
@@ -50,7 +52,7 @@ export interface DeleteThreadRequestModel {
 
 export type DeleteThreadApiResponseModel = ApiResponseModel<boolean>;
 
-enum SendMessageContentType {
+export enum SendMessageContentType {
     Text,
     Html,
 }
@@ -62,13 +64,12 @@ export interface SendMessageRequestModel {
     contentType: SendMessageContentType;
 }
 
-export type SendMessageApiResponseModel = ApiResponseModel<boolean>;
+export type SendMessageApiResponseModel = ApiResponseModel<ChatMessage[]>;
 
 export interface SendFileRequestModel {
     threadId: string;
     senderId: string;
-    // TODO file type
-    files: any[];
+    files: FileList;
 }
 
-export type SendFileApiResponseMode = ApiResponseModel<boolean>;
+export type SendFileApiResponseModel = ApiResponseModel<ChatMessage[]>;

@@ -22,7 +22,8 @@ const messages = createReducer<MessageModel[], RootAction>([])
         }
 
         return state;
-    });
+    })
+    .handleAction([rootAction.chat.clearChatMessages], (_, __) => []);
 
 export const messagingState = combineReducers({ messages });
 

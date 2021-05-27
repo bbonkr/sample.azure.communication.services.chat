@@ -106,7 +106,9 @@ const sendMessageEpic: Epic<RootAction, RootAction, RootState, Services> = (
         filter(isActionOf(rootAction.chat.sendMessage.request)),
         switchMap((action) =>
             from(api.chat.sendMessage(action.payload)).pipe(
-                map((value) => rootAction.chat.sendMessage.success(value)),
+                mergeMap((value) =>
+                    of(rootAction.chat.sendMessage.success(value)),
+                ),
                 catchError((error) =>
                     of(rootAction.chat.sendMessage.failure(error)),
                 ),
