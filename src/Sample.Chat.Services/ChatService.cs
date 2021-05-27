@@ -45,7 +45,6 @@ namespace Sample.Chat.Services
             }
 
             var user = await dbContext.Users
-                .Include(x => x.Threads)
                 .Where(x => x.Email == email.Trim())
                 .AsNoTracking()
                 .FirstOrDefaultAsync();
@@ -55,7 +54,8 @@ namespace Sample.Chat.Services
                 throw new Exception($"Could not find the user. ({email})");
             }
 
-            var query =  dbContext.Threads.Include(x => x.Participants)
+            var query = dbContext.Threads.Include(x => x.Participants)
+                .ThenInclude(x => x.User)
                 .Where(x => x.Participants.Any(p => p.UserId == user.Id));
 
             if (!string.IsNullOrWhiteSpace(keyword))
@@ -63,11 +63,12 @@ namespace Sample.Chat.Services
                 query = query.Where(x => EF.Functions.Like(x.Topic, $"%{keyword}%"));
             }
 
-            var result  = await query.AsNoTracking()
-               .Select(x => mapper.Map<ThreadResponseModel>(x))
+            var result = await query.AsNoTracking()
+                .OrderByDescending(x => x.CreatedAt)
+                .Select(x => mapper.Map<ThreadResponseModel>(x))
                .ToPagedModelAsync(page, limit, cancellationToken);
 
-            return result;            
+            return result;
         }
 
         /// <summary>
@@ -79,19 +80,21 @@ namespace Sample.Chat.Services
         public async Task<CreateThreadResponseModel> CreateThreadAsync(CreateThreadRequestModel model, CancellationToken cancellationToken = default)
         {
             var chatClient = await GetModeratorChatClientAsync(cancellationToken);
-
+            
             var createChatThreadResult = await chatClient.CreateChatThreadAsync(
                 model.Topic,
                 participants: model.ParticipantIds.Select(userId => new ChatParticipant(new CommunicationUserIdentifier(userId))),
                 cancellationToken: cancellationToken);
 
+            var threadId = createChatThreadResult.Value.ChatThread.Id;
+
             var thread = new Entities.Thread
             {
-                Id = createChatThreadResult.Value.ChatThread.Id,
+                Id = threadId,
                 Topic = createChatThreadResult.Value.ChatThread.Topic,
                 Participants = model.ParticipantIds.Select(userId => new Entities.ThreadParticipant
                 {
-                    UserId = userId
+                    UserId = userId,
                 }).ToList(),
             };
 
@@ -99,10 +102,9 @@ namespace Sample.Chat.Services
 
             var affectedCreateThread = await dbContext.SaveChangesAsync(cancellationToken);
 
-            return new CreateThreadResponseModel
-            {
-                Id = createChatThreadResult.Value.ChatThread.Id,
-            };
+            var result = await FindThreadByIdAsync(threadId, cancellationToken);
+
+            return mapper.Map<CreateThreadResponseModel>(result);
         }
 
         /// <summary>
@@ -432,9 +434,21 @@ namespace Sample.Chat.Services
             var chatClient = new ChatClient(
             new Uri(azureCommunicationServicesOptions.GatewayUrl),
             new Azure.Communication.CommunicationTokenCredential(token)
-            );
+            ); ;
 
             return chatClient;
+        }
+
+        private async Task<Entities.Thread> FindThreadByIdAsync(string id, CancellationToken cancellationToken = default)
+        {
+            var result = await dbContext.Threads
+                .Include(x => x.Participants)
+                .ThenInclude(x => x.User)
+                .Where(x => x.Id == id)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(cancellationToken);
+
+            return result;
         }
 
         private readonly DefaultDbContext dbContext;

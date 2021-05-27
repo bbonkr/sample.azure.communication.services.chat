@@ -16,7 +16,13 @@ namespace Sample.Chat.Services.Mappers
                 .ForMember(dest => dest.Participants, options => options.MapFrom(src => src.Participants.Select(participant => new Participant
                 {
                     DisplayName = participant.User.DisplayName,
-                })));
+                }).ToList()));
+
+            CreateMap<Thread, CreateThreadResponseModel>()
+               .ForMember(dest => dest.Participants, options => options.MapFrom(src => src.Participants.Select(participant => new Participant
+               {
+                   DisplayName = participant.User.DisplayName,
+               }).ToList()));
         }
     }
 }

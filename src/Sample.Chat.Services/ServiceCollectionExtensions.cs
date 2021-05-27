@@ -50,6 +50,7 @@ namespace Sample.Chat.Services
             services.AddTransient<IUserService, UserService>();
             services.AddTransient<IChatService, ChatService>();
             services.AddTransient<IUserTokenManager, UserTokenManager>();
+            services.AddTransient<IFileService, FileService>();
 
             return services;
         }

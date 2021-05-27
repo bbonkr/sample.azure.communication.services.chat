@@ -9,9 +9,9 @@ namespace Sample.Chat.Services.Models
         public IEnumerable<string> ParticipantIds { get; set; }
     }
 
-    public class CreateThreadResponseModel
+    public class CreateThreadResponseModel : ThreadResponseModel
     {
-        public string Id { get; set; }
+        
     }
 
     public class AddUserToThreadRequestModel
