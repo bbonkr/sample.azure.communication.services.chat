@@ -29,9 +29,7 @@ export interface CreateThreadRequestModel {
     participantIds: string[];
 }
 
-export interface CreateThreadResponseModel {
-    id: string;
-}
+export type CreateThreadResponseModel = GetThreadResponseModel;
 
 export type CreateThreadApiResponseModel =
     ApiResponseModel<CreateThreadResponseModel>;

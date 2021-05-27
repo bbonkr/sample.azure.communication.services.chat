@@ -1,7 +1,7 @@
 import { combineEpics, Epic } from 'redux-observable';
 import { isActionOf } from 'typesafe-actions';
 import { from, of } from 'rxjs';
-import { filter, map, switchMap, catchError } from 'rxjs/operators';
+import { filter, map, switchMap, catchError, mergeMap } from 'rxjs/operators';
 import { RootState } from '../reducers';
 import { Services } from '../../services';
 import { RootAction, rootAction } from '../actions';
@@ -83,7 +83,13 @@ const deleteThreadEpic: Epic<RootAction, RootAction, RootState, Services> = (
         filter(isActionOf(rootAction.chat.deleteThread.request)),
         switchMap((action) =>
             from(api.chat.deleteThread(action.payload)).pipe(
-                map((value) => rootAction.chat.deleteThread.success(value)),
+                // map((value) => rootAction.chat.deleteThread.success(value)),
+                mergeMap((value) =>
+                    of(
+                        rootAction.chat.deleteThread.success(value),
+                        rootAction.chat.removeThread(action.payload.threadId),
+                    ),
+                ),
                 catchError((error) =>
                     of(rootAction.chat.deleteThread.failure(error)),
                 ),

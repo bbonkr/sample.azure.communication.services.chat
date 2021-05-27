@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { ChatThreadClient, ChatMessage } from '@azure/communication-chat';
+import {
+    ChatThreadClient,
+    ChatMessage,
+    ChatClient,
+} from '@azure/communication-chat';
 import {
     ChatParticipant,
     CreateThreadRequestModel,
@@ -26,9 +30,38 @@ export const useChatApi = () => {
 
     const state = useSelector<RootState, ChatState>((s) => s.chat);
 
-    useEffect(() => {
-        if (state.chatClient) {
-            state.chatClient.on('participantsAdded', (e) => {
+    const startChatClientAsync = async (): Promise<void> => {
+        const { chatClient } = state;
+        if (chatClient) {
+            // Must call startRealtimeNotifications()
+            await chatClient.startRealtimeNotifications();
+
+            chatClient.on('chatThreadCreated', (e) => {
+                console.info('⚡ chatThreadCreated', e);
+            });
+
+            chatClient.on('chatThreadPropertiesUpdated', (e) => {
+                console.info('⚡ chatThreadPropertiesUpdated', e);
+            });
+
+            chatClient.on('chatMessageReceived', (e) => {
+                console.info('⚡ chatMessageReceived', e);
+            });
+
+            chatClient.on('chatThreadDeleted', (e) => {
+                console.info('⚡ chatThreadDeleted', e);
+            });
+
+            chatClient.on('chatThreadPropertiesUpdated', (e) => {
+                console.info('⚡ chatThreadPropertiesUpdated', e);
+            });
+
+            chatClient.on('chatMessageEdited', (e) => {
+                console.info('⚡ chatMessageEdited', e);
+            });
+
+            chatClient.on('participantsAdded', (e) => {
+                console.info('⚡ participantsAdded', e);
                 setParticipants((prevState) => {
                     e.participantsAdded.forEach((participant) => {
                         prevState.push({
@@ -39,7 +72,32 @@ export const useChatApi = () => {
                     return [...prevState];
                 });
             });
+
+            chatClient.on('participantsRemoved', (e) => {
+                console.info('⚡ participantsAdded', e);
+            });
         }
+    };
+
+    const stopChatClientAsync = async (): Promise<void> => {
+        const { chatClient } = state;
+        if (chatClient) {
+            await chatClient.stopRealtimeNotifications();
+        }
+    };
+
+    useEffect(() => {
+        if (state.chatClient) {
+            startChatClientAsync()
+                .then(() => {
+                    console.info('Chat client prepared.');
+                })
+                .catch((err) => {
+                    console.info('Chat client did not have prepared.', err);
+                });
+        }
+
+        return () => {};
     }, [state.chatClient]);
 
     useEffect(() => {
@@ -83,6 +141,7 @@ export const useChatApi = () => {
         sendFileRequest: (payload: SendFileRequestModel) =>
             dispatch(rootAction.chat.sendFile.request(payload)),
         getMessagesAsync,
+        stopChatClientAsync: stopChatClientAsync,
     };
 };
 

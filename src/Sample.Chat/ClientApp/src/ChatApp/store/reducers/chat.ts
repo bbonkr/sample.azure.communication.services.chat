@@ -59,6 +59,16 @@ export const threads = createReducer<GetThreadResponseModel[], RootAction>([])
             return [...state.splice(index, 1)];
         }
         return state;
+    })
+    .handleAction([rootAction.chat.createThread.success], (state, action) => {
+        const index = state.findIndex((x) => x.id === action.payload.data.id);
+        if (index >= 0) {
+            state.splice(index, 1, action.payload.data);
+        } else {
+            state.splice(0, 0, action.payload.data);
+        }
+
+        return [...state];
     });
 
 export const hasMoreThreads = createReducer<boolean, RootAction>(true)
