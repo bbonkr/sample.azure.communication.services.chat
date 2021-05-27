@@ -336,7 +336,7 @@ namespace Sample.Chat.Services
         /// <param name="model"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<string> SendMessageAsync(SendMessageRequestModel model, CancellationToken cancellationToken = default)
+        public async Task<ChatMessageModel> SendMessageAsync(SendMessageRequestModel model, CancellationToken cancellationToken = default)
         {
             if (!(await IsValidThread(model.ThreadId)))
             {
@@ -368,7 +368,17 @@ namespace Sample.Chat.Services
 
             var response = await chatThreadClient.SendMessageAsync(model.Content, chatMessageType, user.DisplayName, cancellationToken);
 
-            return response.Value.Id;
+            var message = await chatThreadClient.GetMessageAsync(response.Value.Id);
+
+            var responseModel = mapper.Map<ChatMessageModel>(message.Value);
+
+            responseModel.Sender = mapper.Map<CommunicationUserIdentifierModel>((message.Value.Sender as CommunicationUserIdentifier));
+
+            responseModel.Content.initiator = mapper.Map<CommunicationUserIdentifierModel>((message.Value.Content?.Initiator as CommunicationUserIdentifier));
+
+            
+
+            return responseModel;
         }
 
         private async Task<bool> IsParticipant(string threadId, string userId, CancellationToken cancellationToken = default)

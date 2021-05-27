@@ -2,6 +2,8 @@
 using System.Threading;
 using System.Threading.Tasks;
 
+using Azure.Communication.Chat;
+
 using kr.bbon.EntityFrameworkCore.Extensions;
 
 using Sample.Chat.Services.Models;
@@ -24,6 +26,6 @@ namespace Sample.Chat.Services
 
         Task<int> WithdrawFromAllThread(string email, CancellationToken cancellationToken = default);
 
-        Task<string> SendMessageAsync(SendMessageRequestModel model, CancellationToken cancellationToken = default);
+        Task<ChatMessageModel> SendMessageAsync(SendMessageRequestModel model, CancellationToken cancellationToken = default);
     }
 }
