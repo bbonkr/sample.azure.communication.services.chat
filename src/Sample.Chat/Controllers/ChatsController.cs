@@ -15,6 +15,7 @@ using System.IO;
 using System.Threading;
 using kr.bbon.AspNetCore.Models;
 using kr.bbon.EntityFrameworkCore.Extensions;
+using Azure.Communication.Chat;
 
 namespace Sample.Chat.Controllers
 {
@@ -125,12 +126,12 @@ namespace Sample.Chat.Controllers
         /// <returns></returns>
         [HttpPost]
         [Route("threads/{threadId}/messages")]
-        [Produces(typeof(ApiResponseModel<bool>))]
+        [Produces(typeof(ApiResponseModel<IEnumerable<ChatMessageModel>>))]
         public async Task<IActionResult> SendMessageAsync([FromRoute] string threadId, [FromBody] SendMessageRequestModel model)
         {
             var result = await chatService.SendMessageAsync(model);
 
-            return StatusCode(HttpStatusCode.OK, !string.IsNullOrEmpty(result));
+            return StatusCode(HttpStatusCode.OK, string.Empty, new List<ChatMessageModel> { result });
         }
 
         /// <summary>
@@ -142,7 +143,7 @@ namespace Sample.Chat.Controllers
         /// <returns></returns>
         [HttpPost]
         [Route("thread/{threadId}/files")]
-        [Produces(typeof(ApiResponseModel<bool>))]
+        [Produces(typeof(ApiResponseModel<IEnumerable<ChatMessageModel>>))]
         public async Task<IActionResult> SendFileAsync([FromRoute] string threadId, [FromBody] SendFileRequestModel model, CancellationToken cancellationToken = default)
         {
             var requests = new List<FileSavedRequestModel>();
@@ -164,10 +165,10 @@ namespace Sample.Chat.Controllers
 
             var savedResponse = await fileService.SaveAsync(requests, cancellationToken);
 
-            var count = 0;
+            var messages = new List<ChatMessageModel>();
             foreach (var response in savedResponse)
             {
-                await chatService.SendMessageAsync(new SendMessageRequestModel
+                var message = await chatService.SendMessageAsync(new SendMessageRequestModel
                 {
                     ThreadId = model.ThreadId,
                     SenderId = model.senderId,
@@ -176,10 +177,10 @@ namespace Sample.Chat.Controllers
 
                 });
 
-                count++;
+                messages.Add(message);
             }
 
-            return StatusCode(HttpStatusCode.OK, count > 0);
+            return StatusCode(HttpStatusCode.OK, messages);
         }
 
 
