@@ -6,6 +6,8 @@ import { AuthProvider } from '../AuthProvider';
 import { ChatForm } from './ChatForm';
 import { ChatMessageItem } from './ChatMessageItem';
 
+import './style.css';
+
 export interface ChatProps {
     onClose?: () => void;
 }
@@ -58,29 +60,54 @@ export const Chat = ({ onClose }: ChatProps) => {
 
     return (
         <AuthProvider>
-            <div className="is-flex-grow-1">
-                <div>
-                    <h2>
-                        Chat <small>{selectedThread?.topic}</small>
-                    </h2>
+            <div className="is-flex-grow-1 is-position-relative">
+                <div className="hero is-fullheight is-position-absolute is-inset-0">
+                    <div className="hero-head">
+                        <header className="hero is-link is-bold">
+                            <div className="hero-body">
+                                <div className="container">
+                                    <p className="title">
+                                        {selectedThread?.topic}
+                                    </p>
 
-                    <button
-                        className="delete"
-                        aria-label="close"
-                        onClick={handleClickClose}
-                    ></button>
-                </div>
-
-                <ul className="is-flex-grow-1 is-scroll-y">
-                    {messages
-                        .sort((a, b) => (a.createdOn > b.createdOn ? 1 : -1))
-                        .map((m) => (
-                            <ChatMessageItem key={m.id} chatMessage={m} />
-                        ))}
-                </ul>
-
-                <div>
-                    <ChatForm onSendMessage={handleSendMessage} />
+                                    <ul className="subtitle">
+                                        {selectedThread?.participants.map(
+                                            (p) => (
+                                                <li key={p.id}>
+                                                    {p.displayName}
+                                                </li>
+                                            ),
+                                        )}
+                                    </ul>
+                                    <button
+                                        className="delete"
+                                        aria-label="close"
+                                        onClick={handleClickClose}
+                                    ></button>
+                                </div>
+                            </div>
+                        </header>
+                    </div>
+                    <div className="hero-body has-background-light is-align-items-flex-start">
+                        <div className="chat-container">
+                            <ul className="is-flex-grow-1 is-scroll-y">
+                                {messages
+                                    .sort((a, b) =>
+                                        a.createdOn > b.createdOn ? 1 : -1,
+                                    )
+                                    .map((m) => (
+                                        <ChatMessageItem
+                                            key={m.id}
+                                            chatMessage={m}
+                                            user={user ?? undefined}
+                                        />
+                                    ))}
+                            </ul>
+                        </div>
+                    </div>
+                    <div className="hero-footer">
+                        <ChatForm onSendMessage={handleSendMessage} />
+                    </div>
                 </div>
             </div>
         </AuthProvider>

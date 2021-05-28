@@ -118,11 +118,11 @@ export const ChatForm = ({ onSendFile, onSendMessage }: ChatFormProps) => {
     return (
         <form onSubmit={handleClickSendMessage}>
             <div className="field">
-                <label className="label" htmlFor="chat-message">
+                {/* <label className="label" htmlFor="chat-message">
                     Message
-                </label>
+                </label> */}
                 <div className="field has-addons">
-                    <div className="control is-flex-grow-1">
+                    <div className="control is-expanded">
                         <textarea
                             name="message"
                             id="chat-message"
