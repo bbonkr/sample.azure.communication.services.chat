@@ -1,4 +1,5 @@
 import { ApiResponseModel } from '../ApiResponseModel';
+import { PagedModel } from '../PagedModel';
 
 export interface GetUserRequestModel {
     email: string;
@@ -26,3 +27,13 @@ export interface CreateUserRequestModel {
 }
 
 export type DeleteUserApiResponse = ApiResponseModel<boolean>;
+
+export interface GetUsersRequestModel {
+    page: number;
+    limit: number;
+    keyword: string;
+}
+
+export type GetUsersApiResponseModel = ApiResponseModel<
+    PagedModel<GetUserResponseModel>
+>;

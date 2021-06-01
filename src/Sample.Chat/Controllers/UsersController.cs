@@ -112,6 +112,16 @@ namespace Sample.Chat.Controllers
             return StatusCode(HttpStatusCode.OK, "Done.", result > 0);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetUsers(int page = 1, int limit = 10, string keyword = "")
+        {
+            var pageValue = page > 0 ? page : 1;
+            var limitValue = limit > 0 ? limit : 10;
+
+            var result = await userService.GetUsersAsync(pageValue, limitValue, keyword);
+
+            return StatusCode(HttpStatusCode.OK, result);
+        }
 
         private readonly IUserService userService;
         private readonly IChatService chatService;

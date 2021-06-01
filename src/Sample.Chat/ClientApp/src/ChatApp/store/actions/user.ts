@@ -7,6 +7,8 @@ import {
     CreateUserApiResponseModel,
     DeleteUserRequestModel,
     DeleteUserApiResponse,
+    GetUsersRequestModel,
+    GetUsersApiResponseModel,
 } from '../../models/UserClient';
 
 export const loadUser = createAsyncAction(
@@ -27,12 +29,19 @@ export const deleteUser = createAsyncAction(
     'delete-user/failure',
 )<DeleteUserRequestModel, DeleteUserApiResponse, ApiResponseModel>();
 
+export const getUsers = createAsyncAction(
+    'get-users/request',
+    'get-users/success',
+    'get-users/failure',
+)<GetUsersRequestModel, GetUsersApiResponseModel, ApiResponseModel>();
+
 export const clearUser = createAction('clear-user')();
 
 export const userActions = {
     loadUser,
     createUser,
     deleteUser,
+    getUsers,
     clearUser,
 };
 

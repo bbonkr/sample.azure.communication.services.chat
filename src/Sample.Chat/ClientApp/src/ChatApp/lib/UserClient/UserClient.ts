@@ -6,6 +6,8 @@ import {
     DeleteUserApiResponse,
     CreateUserApiResponseModel,
     DeleteUserRequestModel,
+    GetUsersRequestModel,
+    GetUsersApiResponseModel,
 } from '../../models/UserClient';
 import { ApiClientBase } from '../ApiClientBase/ApiClientBase';
 
@@ -56,6 +58,21 @@ export class UserClient extends ApiClientBase {
             const response =
                 await this.getClient().delete<DeleteUserApiResponse>(url);
 
+            return this.returnsModelIfSucceed(response);
+        } catch (err) {
+            throw this.throwsManagedError(err);
+        }
+    }
+
+    public async getUsers(
+        model: GetUsersRequestModel,
+    ): Promise<GetUsersApiResponseModel> {
+        const url = `${this.getBaseUrl()}?page=${model.page}&limit=${
+            model.limit
+        }&keyowrd=${encodeURIComponent(model.keyword)}`;
+        try {
+            const response =
+                await this.getClient().get<GetUsersApiResponseModel>(url);
             return this.returnsModelIfSucceed(response);
         } catch (err) {
             throw this.throwsManagedError(err);

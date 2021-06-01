@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Link } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
 import { useUserApi } from '../../hooks/useUserApi';
 import { Section } from '../Layouts';
 import { FormState, schema } from './FormState';
 import { FaEnvelope, FaCheck } from 'react-icons/fa';
 import * as yup from 'yup';
 import { useMessaging } from '../../hooks/useMessaging';
+import { QueryStringParser } from '../../lib/QueryStringParser';
 
 export const SignUp = () => {
+    const history = useHistory();
     const { user, createUserRequest, isLoadingUser, userError } = useUserApi();
     const { addMessage } = useMessaging();
 
@@ -92,6 +94,17 @@ export const SignUp = () => {
             });
         }
     }, [userError]);
+
+    useEffect(() => {
+        const { search } = location;
+
+        const { returnUrl } = QueryStringParser.parse(search);
+
+        if (user) {
+            let url = returnUrl ?? '/';
+            history.replace(url);
+        }
+    }, [user]);
 
     return (
         <Section classNames={['is-full-screen']}>

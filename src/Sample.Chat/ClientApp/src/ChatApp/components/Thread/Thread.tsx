@@ -5,6 +5,7 @@ import { useUserApi } from '../../hooks/useUserApi';
 import { AuthProvider } from '../AuthProvider';
 import { SendMessageContentType } from '../../models/ChatClient';
 import { Chat } from '../Chat';
+import { JoinThreadDialog } from '../JoinThreadDialog';
 
 export const Thread = () => {
     const limit = 20;
@@ -22,13 +23,15 @@ export const Thread = () => {
     } = useChatApi();
 
     const [page, setPage] = useState(1);
+    const [joinThreadDialogOpen, setJoinThreadDialogOpen] = useState(false);
 
     const handleCreateThread = () => {
         if (user) {
-            createThreadRequest({
-                topic: `sample ${new Date().toISOString()}`,
-                participantIds: [user?.id],
-            });
+            // createThreadRequest({
+            //     topic: `sample ${new Date().toISOString()}`,
+            //     participantIds: [user?.id],
+            // });
+            setJoinThreadDialogOpen((_) => true);
         }
     };
 
@@ -39,6 +42,10 @@ export const Thread = () => {
 
     const handleCloseChat = () => {
         clearSelectedThread();
+    };
+
+    const handleCloseJoinThreadDialog = () => {
+        setJoinThreadDialogOpen((_) => false);
     };
 
     useEffect(() => {
@@ -90,6 +97,10 @@ export const Thread = () => {
                 </div>
                 {selectedThread && <Chat onClose={handleCloseChat} />}
             </div>
+            <JoinThreadDialog
+                open={joinThreadDialogOpen}
+                onClose={handleCloseJoinThreadDialog}
+            />
         </AuthProvider>
     );
 };

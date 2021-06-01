@@ -59,10 +59,28 @@ const deleteUserEpic: Epic<RootAction, RootAction, RootState, Services> = (
         ),
     );
 
+const getUsersEpic: Epic<RootAction, RootAction, RootState, Services> = (
+    action$,
+    state$,
+    api,
+) =>
+    action$.pipe(
+        filter(isActionOf(rootAction.user.getUsers.request)),
+        switchMap((action) =>
+            from(api.user.getUsers(action.payload)).pipe(
+                map((value) => rootAction.user.getUsers.success(value)),
+                catchError((error) =>
+                    of(rootAction.user.getUsers.failure(error)),
+                ),
+            ),
+        ),
+    );
+
 export const userEpic = combineEpics(
     loadUserEpic,
     createUserEpic,
     deleteUserEpic,
+    getUsersEpic,
 );
 
 export type UserEpic = ReturnType<typeof userEpic>;

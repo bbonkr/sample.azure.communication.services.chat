@@ -62,7 +62,7 @@ export const SignIn = () => {
         const { returnUrl } = QueryStringParser.parse(search);
 
         if (user) {
-            let url = returnUrl ?? '/threads';
+            let url = returnUrl ?? '/';
             history.replace(url);
         }
     }, [user]);

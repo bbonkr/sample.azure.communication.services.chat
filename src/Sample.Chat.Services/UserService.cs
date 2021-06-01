@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
 using AutoMapper;
+
+using kr.bbon.EntityFrameworkCore.Extensions;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -28,6 +31,28 @@ namespace Sample.Chat.Services
             azureCommunicationServicesOptions = azureCommunicationServicesOptionsMonitor.CurrentValue ?? throw new Exception("Azure Communication Service configuration is invalid.");
         }
 
+        public async Task<IPagedModel<UserModel>> GetUsersAsync(int page = 1, int limit = 10, string keyword = "", CancellationToken cancellationToken = default)
+        {
+            var query = dbContext.Users
+                .Include(x => x.Threads)
+                .Where(x => !x.IsModerator);
+
+            if (!string.IsNullOrEmpty(keyword))
+            {
+                query = query.Where(x => EF.Functions.Like(x.DisplayName, $"%{keyword}%"));
+            }
+
+
+            var result = await query
+                .Sort(nameof(User.DisplayName), true)
+                .Sort(nameof(User.Id), true)
+                .Select(x => mapper.Map<UserModel>(x))
+                .AsNoTracking()
+                .ToPagedModelAsync(page, limit, cancellationToken);
+
+            return result;
+
+        }
 
         public async Task<UserModel> CreateUserAsync(CreateUserRequestModel model, CancellationToken cancellationToken = default)
         {

@@ -79,11 +79,26 @@ export const Chat = ({ onClose }: ChatProps) => {
                                             ),
                                         )}
                                     </ul>
-                                    <button
+                                    {/* <button
                                         className="delete"
                                         aria-label="close"
                                         onClick={handleClickClose}
-                                    ></button>
+                                    ></button> */}
+                                    <div className="field is-grouped">
+                                        <div className="control">
+                                            <button className="button">
+                                                Invite
+                                            </button>
+                                        </div>
+                                        <div className="control">
+                                            <button
+                                                className="button"
+                                                onClick={handleClickClose}
+                                            >
+                                                Close
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </header>
