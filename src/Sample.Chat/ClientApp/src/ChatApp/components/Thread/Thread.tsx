@@ -18,8 +18,10 @@ export const Thread = () => {
         createThreadRequest,
         chatError,
         selectedThread,
+        selectedThreadId,
         selectThread,
         clearSelectedThread,
+        startChatClient,
     } = useChatApi();
 
     const [page, setPage] = useState(1);
@@ -49,6 +51,8 @@ export const Thread = () => {
     };
 
     useEffect(() => {
+        startChatClient();
+
         if (user?.email) {
             getThreadsRequest({ email: user?.email, page, limit });
         }
@@ -64,6 +68,10 @@ export const Thread = () => {
             });
         }
     }, [chatError]);
+
+    useEffect(() => {
+        console.info('selectedThreadId', selectedThreadId);
+    }, [selectedThreadId]);
 
     return (
         <AuthProvider>

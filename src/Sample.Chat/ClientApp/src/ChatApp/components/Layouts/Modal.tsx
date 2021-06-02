@@ -2,12 +2,16 @@ import React, { PropsWithChildren } from 'react';
 
 interface ModalProps {
     title: React.ReactNode;
+    body?: React.ReactNode;
+    footer?: React.ReactNode;
     open?: boolean;
     onClose?: () => void;
 }
 
 export const Modal = ({
     title,
+    body,
+    footer,
     open,
     children,
     onClose,
@@ -17,6 +21,9 @@ export const Modal = ({
             onClose();
         }
     };
+    if (!open) {
+        return <React.Fragment></React.Fragment>;
+    }
     return (
         <div className={`modal ${open ? 'is-active' : ''}`}>
             <div className="modal-background" onClick={handleClose}></div>
@@ -29,10 +36,15 @@ export const Modal = ({
                         onClick={handleClose}
                     ></button>
                 </header>
-                <section className="modal-card-body">{children}</section>
+                <section className="modal-card-body">
+                    {body ?? children}
+                </section>
                 <footer className="modal-card-foot">
-                    <button className="button is-success">Save changes</button>
-                    <button className="button">Cancel</button>
+                    {footer ?? (
+                        <button className="button" onClick={onClose}>
+                            Close
+                        </button>
+                    )}
                 </footer>
             </div>
         </div>

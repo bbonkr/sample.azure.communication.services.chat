@@ -12,8 +12,6 @@ import {
     GetThreadResponseModel,
 } from '../../models/ChatClient';
 import { rootAction, RootAction } from '../actions';
-import _ from 'lodash';
-import { StateObservable } from 'redux-observable';
 
 export const isLoadingThreads = createReducer<boolean, RootAction>(false)
     .handleAction(
@@ -158,6 +156,13 @@ const selectedThread = createReducer<GetThreadResponseModel | null, RootAction>(
     (state, action) => action.payload ?? null,
 );
 
+const selectedThreadId = createReducer<string | null, RootAction>(
+    null,
+).handleAction(
+    [rootAction.chat.selectThreadId],
+    (state, action) => action.payload ?? null,
+);
+
 const messages = createReducer<ChatMessage[], RootAction>([])
     .handleAction(
         [rootAction.chat.sendMessage.success, rootAction.chat.sendFile.success],
@@ -177,7 +182,7 @@ const messages = createReducer<ChatMessage[], RootAction>([])
         },
     )
     .handleAction([rootAction.chat.addChatMessages], (state, action) => {
-        action.payload
+        action.payload.messages
             .sort((a, b) => (a.createdOn > b.createdOn ? 1 : -1))
             .forEach((m) => {
                 const message = state.find((x) => x.id === m.id);
@@ -236,6 +241,14 @@ export const participants = createReducer<ChatParticipant[], RootAction>([])
     })
     .handleAction([rootAction.chat.clearParticipants], (_, __) => []);
 
+export const isChatRealTimeNotificationStarted = createReducer<
+    boolean,
+    RootAction
+>(false).handleAction(
+    [rootAction.chat.setIsChatRealTimeNotificationStarted],
+    (_, action) => action.payload,
+);
+
 export const chatState = combineReducers({
     threads,
     isLoadingThreads,
@@ -243,9 +256,11 @@ export const chatState = combineReducers({
     chatError,
     chatClient,
     selectedThread,
+    selectedThreadId,
     chatThreadClient,
     participants,
     messages,
+    isChatRealTimeNotificationStarted,
 });
 
 export type ChatState = ReturnType<typeof chatState>;

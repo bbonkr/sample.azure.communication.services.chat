@@ -1,10 +1,11 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useChatApi } from '../../hooks/useChatApi';
 import { useUserApi } from '../../hooks/useUserApi';
 import { SendMessageContentType } from '../../models/ChatClient';
 import { AuthProvider } from '../AuthProvider';
 import { ChatForm } from './ChatForm';
 import { ChatMessageItem } from './ChatMessageItem';
+import { JoinThreadDialog } from '../JoinThreadDialog';
 
 import './style.css';
 
@@ -22,6 +23,8 @@ export const Chat = ({ onClose }: ChatProps) => {
         sendMessageRequest,
     } = useChatApi();
 
+    const [joinThreadDialogOpen, setJoinThreadDialogOpen] = useState(false);
+
     const handleSendMessage = (message: string) => {
         console.info(
             'handleSendMessage:  user, selectedThread',
@@ -38,6 +41,10 @@ export const Chat = ({ onClose }: ChatProps) => {
 
             sendMessageRequest(payload);
         }
+    };
+
+    const handleClickInvite = () => {
+        setJoinThreadDialogOpen((_) => true);
     };
 
     const handleClickClose = () => {
@@ -86,7 +93,10 @@ export const Chat = ({ onClose }: ChatProps) => {
                                     ></button> */}
                                     <div className="field is-grouped">
                                         <div className="control">
-                                            <button className="button">
+                                            <button
+                                                className="button"
+                                                onClick={handleClickInvite}
+                                            >
                                                 Invite
                                             </button>
                                         </div>
@@ -125,6 +135,11 @@ export const Chat = ({ onClose }: ChatProps) => {
                     </div>
                 </div>
             </div>
+            <JoinThreadDialog
+                open={joinThreadDialogOpen}
+                onClose={() => setJoinThreadDialogOpen((_) => false)}
+                thread={selectedThread ?? undefined}
+            />
         </AuthProvider>
     );
 };

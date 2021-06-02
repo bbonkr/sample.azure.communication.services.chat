@@ -13,7 +13,7 @@ export const ChatMessageItem = ({
     chatMessage,
     user,
 }: ChatMessageItemProps) => {
-    console.info('chatMessage', chatMessage);
+    // console.info('chatMessage', chatMessage);
     const identifier = AcsHelper.parseIdentifier(chatMessage.sender);
     const chatMessageType = chatMessage.type.toLowerCase();
 

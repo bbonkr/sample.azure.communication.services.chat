@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import throttle from 'lodash/throttle';
 import {
@@ -19,19 +19,119 @@ import {
 } from '../../models/ChatClient';
 import { rootAction } from '../../store/actions';
 import { RootState } from '../../store/reducers';
-import { ChatState, chatThreadClient } from '../../store/reducers/chat';
+import { ChatState } from '../../store/reducers/chat';
+import { threadId } from 'worker_threads';
 
 export const useChatApi = () => {
     const dispatch = useDispatch();
 
     const state = useSelector<RootState, ChatState>((s) => s.chat);
 
-    const startChatClientAsync = async (): Promise<void> => {
+    const startChatClient = () => {
         const { chatClient } = state;
         if (chatClient) {
-            // Must call startRealtimeNotifications()
-            await chatClient.startRealtimeNotifications();
+            // Must call startRealtimeNotifications() first
+            chatClient
+                .startRealtimeNotifications()
+                .then(() => {
+                    dispatch(
+                        rootAction.chat.setIsChatRealTimeNotificationStarted(
+                            true,
+                        ),
+                    );
+                    console.info('Real-time notification started.');
+                })
+                .catch((err) => {
+                    rootAction.chat.setIsChatRealTimeNotificationStarted(false);
+                    console.error(
+                        'Cloud not start real-time notification',
+                        err,
+                    );
+                });
+        }
+    };
 
+    const stopChatClient = () => {
+        const { chatClient } = state;
+        if (chatClient) {
+            chatClient
+                .stopRealtimeNotifications()
+                .then(() => {
+                    console.info('Real-time notification stopped.');
+                })
+                .catch((err) =>
+                    console.error('Could not stop real-time notification.'),
+                );
+        }
+    };
+
+    const addChatMessages = (threadId: string, messages: ChatMessage[]) => {
+        console.info('addChatMessages', threadId, state);
+        if (threadId === state.selectedThread?.id) {
+            dispatch(
+                rootAction.chat.addChatMessages({
+                    threadId: threadId,
+                    messages,
+                }),
+            );
+        }
+    };
+
+    const updateChatMessage = (message: ChatMessage) => {
+        dispatch(rootAction.chat.updateChatMessage(message));
+    };
+
+    const deleteChatMessage = (message: Partial<Pick<ChatMessage, 'id'>>) => {
+        dispatch(rootAction.chat.deleteChatMessage(message));
+    };
+
+    const getChatMessage = (ids: string[]): ChatMessage[] => {
+        const { chatThreadClient } = state;
+        const chatMessages: ChatMessage[] = [];
+        if (chatThreadClient) {
+            ids.forEach(async (id) => {
+                const chatMessage = await chatThreadClient.getMessage(id);
+                chatMessages.push(chatMessage);
+            });
+        }
+
+        return chatMessages;
+    };
+
+    useEffect(() => {
+        if (state.chatClient) {
+            throttle(() => {
+                console.info('state.chatClient: ', state.chatClient);
+                startChatClient();
+            }, 200);
+        }
+
+        return () => {};
+    }, [state.chatClient]);
+
+    const getMessagesAsync = async (startTime?: Date) => {
+        const { chatThreadClient } = state;
+        if (chatThreadClient) {
+            const loadedMessage: ChatMessage[] = [];
+            try {
+                for await (const message of chatThreadClient.listMessages({
+                    maxPageSize: 20,
+                    startTime: startTime,
+                })) {
+                    loadedMessage.push(message);
+                }
+            } catch (err) {
+                console.error(err);
+            }
+            if (loadedMessage.length > 0) {
+                addChatMessages(chatThreadClient.threadId, loadedMessage);
+            }
+        }
+    };
+
+    useEffect(() => {
+        const { chatClient, isChatRealTimeNotificationStarted } = state;
+        if (chatClient && isChatRealTimeNotificationStarted) {
             chatClient.on('chatThreadCreated', (e) => {
                 console.info('⚡ chatThreadCreated', e);
             });
@@ -41,7 +141,8 @@ export const useChatApi = () => {
             });
 
             chatClient.on('chatMessageReceived', (e) => {
-                console.info('⚡ chatMessageReceived', e);
+                console.info('⚡ chatMessageReceived (e)', e);
+
                 const chatMessage: ChatMessage = {
                     ...e,
                     content: {
@@ -50,7 +151,7 @@ export const useChatApi = () => {
                     sequenceId: 'new message',
                 };
 
-                addChatMessages([chatMessage]);
+                addChatMessages(e.threadId, [chatMessage]);
             });
 
             chatClient.on('chatThreadDeleted', (e) => {
@@ -81,75 +182,7 @@ export const useChatApi = () => {
                 console.info('⚡ participantsAdded', e);
             });
         }
-    };
-
-    const stopChatClientAsync = async (): Promise<void> => {
-        const { chatClient } = state;
-        if (chatClient) {
-            await chatClient.stopRealtimeNotifications();
-        }
-    };
-
-    const addChatMessages = (messages: ChatMessage[]) => {
-        dispatch(rootAction.chat.addChatMessages(messages));
-    };
-
-    const updateChatMessage = (message: ChatMessage) => {
-        dispatch(rootAction.chat.updateChatMessage(message));
-    };
-
-    const deleteChatMessage = (message: Partial<Pick<ChatMessage, 'id'>>) => {
-        dispatch(rootAction.chat.deleteChatMessage(message));
-    };
-
-    const getChatMessage = (ids: string[]): ChatMessage[] => {
-        const { chatThreadClient } = state;
-        const chatMessages: ChatMessage[] = [];
-        if (chatThreadClient) {
-            ids.forEach(async (id) => {
-                const chatMessage = await chatThreadClient.getMessage(id);
-                chatMessages.push(chatMessage);
-            });
-        }
-
-        return chatMessages;
-    };
-
-    useEffect(() => {
-        if (state.chatClient) {
-            throttle(async () => {
-                try {
-                    await startChatClientAsync();
-
-                    console.info('Chat client prepared.');
-                } catch (err) {
-                    console.info('Chat client did not have prepared.', err);
-                }
-            }, 200);
-        }
-
-        return () => {};
-    }, [state.chatClient]);
-
-    const getMessagesAsync = async (startTime?: Date) => {
-        const { chatThreadClient } = state;
-        if (chatThreadClient) {
-            const loadedMessage: ChatMessage[] = [];
-            try {
-                for await (const message of chatThreadClient.listMessages({
-                    maxPageSize: 20,
-                    startTime: startTime,
-                })) {
-                    loadedMessage.push(message);
-                }
-            } catch (err) {
-                console.error(err);
-            }
-            if (loadedMessage.length > 0) {
-                addChatMessages(loadedMessage);
-            }
-        }
-    };
+    }, [state.chatClient, state.isChatRealTimeNotificationStarted]);
 
     useEffect(() => {
         if (state.chatClient) {
@@ -167,6 +200,7 @@ export const useChatApi = () => {
 
     return {
         ...state,
+
         getThreadsRequest: (payload: GetThreadsRequestModel) =>
             dispatch(rootAction.chat.getThreads.request(payload)),
         createThreadRequest: (payload: CreateThreadRequestModel) =>
@@ -182,17 +216,21 @@ export const useChatApi = () => {
         sendFileRequest: (payload: SendFileRequestModel) =>
             dispatch(rootAction.chat.sendFile.request(payload)),
         getMessagesAsync,
-        stopChatClientAsync: stopChatClientAsync,
+        startChatClient,
+        stopChatClient,
+
         selectThread: (id: string) => {
             const { threads } = state;
             const found = threads.find((x) => x.id === id);
             dispatch(rootAction.chat.clearChatMessages());
             dispatch(rootAction.chat.clearParticipants());
+            dispatch(rootAction.chat.selectThreadId(id));
             dispatch(rootAction.chat.selectThread(found));
         },
         clearSelectedThread: () => {
             dispatch(rootAction.chat.clearChatMessages());
             dispatch(rootAction.chat.clearParticipants());
+            dispatch(rootAction.chat.selectThreadId(undefined));
             dispatch(rootAction.chat.selectThread(undefined));
         },
         addChatMessages,

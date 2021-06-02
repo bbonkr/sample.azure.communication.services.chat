@@ -5,17 +5,11 @@ interface ChatProviderProps {}
 export const ChatProvider = ({
     children,
 }: PropsWithChildren<ChatProviderProps>) => {
-    const { stopChatClientAsync } = useChatApi();
+    const { stopChatClient } = useChatApi();
 
     useEffect(() => {
         return () => {
-            stopChatClientAsync()
-                .then(() => {
-                    console.info('Chat client stopped');
-                })
-                .catch((err) => {
-                    console.error('Chat client could not stop.', err);
-                });
+            stopChatClient();
         };
     }, []);
 

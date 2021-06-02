@@ -3,6 +3,7 @@ import {
     CreateUserRequestModel,
     DeleteUserRequestModel,
     GetUserRequestModel,
+    GetUsersRequestModel,
 } from '../../models/UserClient';
 import { rootAction } from '../../store/actions';
 import { RootState } from '../../store/reducers';
@@ -20,6 +21,8 @@ export const useUserApi = () => {
             dispatch(rootAction.user.createUser.request(payload)),
         deleteUserRequest: (payload: DeleteUserRequestModel) =>
             dispatch(rootAction.user.deleteUser.request(payload)),
+        getUsersRequest: (payload: GetUsersRequestModel) =>
+            dispatch(rootAction.user.getUsers.request(payload)),
     };
 };
 

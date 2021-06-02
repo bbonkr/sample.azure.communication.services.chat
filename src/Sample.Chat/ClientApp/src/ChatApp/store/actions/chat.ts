@@ -1,6 +1,6 @@
 import { ActionType, createAction, createAsyncAction } from 'typesafe-actions';
 import { ChatMessage, ChatThreadClient } from '@azure/communication-chat';
-import { ChatParticipant } from '../../models/ChatClient';
+import { AddChatMessagesModel, ChatParticipant } from '../../models/ChatClient';
 import { ApiResponseModel } from '../../models';
 import {
     CreateThreadApiResponseModel,
@@ -70,6 +70,9 @@ export const removeThread = createAction('remove-thread')<string>();
 export const selectThread =
     createAction('select-thread')<GetThreadResponseModel | undefined>();
 
+export const selectThreadId =
+    createAction('select-thread-id')<string | undefined>();
+
 export const setChatThreadClient = createAction('set-chat-thread-client')<
     ChatThreadClient | undefined
 >();
@@ -84,7 +87,7 @@ export const removeParticipant = createAction('remove-chat-participant')<
 export const clearParticipants = createAction('clear-chat-participants')();
 
 export const addChatMessages =
-    createAction('add-chat-messages')<ChatMessage[]>();
+    createAction('add-chat-messages')<AddChatMessagesModel>();
 
 export const updateChatMessage = createAction(
     'update-chat-message',
@@ -98,6 +101,10 @@ export const clearChatMessages = createAction('clear-chat-message')();
 
 export const clearSentMessageIds = createAction('clear-sent-message-ids')();
 
+export const setIsChatRealTimeNotificationStarted = createAction(
+    'set-chat-client-started',
+)<boolean>();
+
 export const chatActions = {
     getThreads,
     createThread,
@@ -109,6 +116,7 @@ export const chatActions = {
     appendThread,
     removeThread,
     selectThread,
+    selectThreadId,
     setChatThreadClient,
     addParticipants,
     removeParticipant,
@@ -118,6 +126,7 @@ export const chatActions = {
     deleteChatMessage,
     clearChatMessages,
     clearSentMessageIds,
+    setIsChatRealTimeNotificationStarted,
 };
 
 export type ChatActions = ActionType<typeof chatActions>;

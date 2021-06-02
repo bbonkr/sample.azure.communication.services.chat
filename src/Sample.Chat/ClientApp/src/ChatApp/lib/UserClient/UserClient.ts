@@ -69,7 +69,7 @@ export class UserClient extends ApiClientBase {
     ): Promise<GetUsersApiResponseModel> {
         const url = `${this.getBaseUrl()}?page=${model.page}&limit=${
             model.limit
-        }&keyowrd=${encodeURIComponent(model.keyword)}`;
+        }&keyword=${encodeURIComponent(model.keyword)}`;
         try {
             const response =
                 await this.getClient().get<GetUsersApiResponseModel>(url);

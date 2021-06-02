@@ -73,3 +73,8 @@ export interface SendFileRequestModel {
 }
 
 export type SendFileApiResponseModel = ApiResponseModel<ChatMessage[]>;
+
+export interface AddChatMessagesModel {
+    threadId: string;
+    messages: ChatMessage[];
+}
