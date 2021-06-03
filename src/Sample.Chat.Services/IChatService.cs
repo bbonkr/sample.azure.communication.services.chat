@@ -18,9 +18,9 @@ namespace Sample.Chat.Services
 
         Task<bool> IsValidThread(string threadId, CancellationToken cancellationToken = default);
 
-        Task<int> AddUserToThreadAsync(AddUserToThreadRequestModel model, CancellationToken cancellationToken = default);
+        Task<ThreadResponseModel> AddUserToThreadAsync(AddUserToThreadRequestModel model, CancellationToken cancellationToken = default);
 
-        Task<int> RemoveUserFromThreadAsync(RemoveUserFromThreadRequestModel model, CancellationToken cancellationToken = default);
+        Task<ThreadResponseModel> RemoveUserFromThreadAsync(RemoveUserFromThreadRequestModel model, CancellationToken cancellationToken = default);
 
         Task<int> DeleteThreadAsync(DeleteThreadRequest model, CancellationToken cancellationToken = default);
 

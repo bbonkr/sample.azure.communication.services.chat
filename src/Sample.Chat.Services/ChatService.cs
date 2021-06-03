@@ -113,7 +113,7 @@ namespace Sample.Chat.Services
         /// <param name="model"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<int> AddUserToThreadAsync(AddUserToThreadRequestModel model, CancellationToken cancellationToken = default)
+        public async Task<ThreadResponseModel> AddUserToThreadAsync(AddUserToThreadRequestModel model, CancellationToken cancellationToken = default)
         {
             var currentThread = await dbContext.Threads
                 .Include(x => x.Participants)
@@ -124,7 +124,7 @@ namespace Sample.Chat.Services
             {
                 logger.LogWarning($"Could not find the thread. (ThreadId: {model.ThreadId})");
 
-                return 0;
+                return null;
             }
 
             var chatClient = await GetModeratorChatClientAsync(cancellationToken);
@@ -170,15 +170,21 @@ namespace Sample.Chat.Services
                     {
                         currentThread.Participants.Add(new Entities.ThreadParticipant
                         {
-                            UserId = userId
+                            UserId = userId,
                         });
                     }
 
-                    return await dbContext.SaveChangesAsync(cancellationToken);
+                    await dbContext.SaveChangesAsync(cancellationToken);
                 }
             }
 
-            return 0;
+            currentThread = await dbContext.Threads
+                .Include(x => x.Participants)
+                .ThenInclude(x => x.User)
+                .Where(x => x.Id == model.ThreadId)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            return mapper.Map<ThreadResponseModel>(currentThread);
         }
 
         /// <summary>
@@ -187,7 +193,7 @@ namespace Sample.Chat.Services
         /// <param name="model"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<int> RemoveUserFromThreadAsync(RemoveUserFromThreadRequestModel model, CancellationToken cancellationToken = default)
+        public async Task<ThreadResponseModel> RemoveUserFromThreadAsync(RemoveUserFromThreadRequestModel model, CancellationToken cancellationToken = default)
         {
             var currentThread = await dbContext.Threads
                 .Include(x => x.Participants)
@@ -197,7 +203,7 @@ namespace Sample.Chat.Services
             {
                 logger.LogWarning($"Could not find the thread. (ThreadId: {model.ThreadId})");
 
-                return 0;
+                return null;
             }
 
             var chatClient = await GetModeratorChatClientAsync(cancellationToken);
@@ -235,11 +241,17 @@ namespace Sample.Chat.Services
                         }
                     }
 
-                    return await dbContext.SaveChangesAsync(cancellationToken);
+                    await dbContext.SaveChangesAsync(cancellationToken);
                 }
             }
 
-            return 0;
+            currentThread = await dbContext.Threads
+                .Include(x => x.Participants)
+                .ThenInclude(x => x.User)
+                .Where(x => x.Id == model.ThreadId)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            return mapper.Map<ThreadResponseModel>(currentThread);
         }
 
         /// <summary>
