@@ -75,12 +75,17 @@ namespace Sample.Chat.Controllers
         /// <returns></returns>
         [HttpPatch]
         [Route("threads/{threadId}/join")]
-        [Produces(typeof(ApiResponseModel<bool>))]
+        [Produces(typeof(ApiResponseModel<ThreadResponseModel>))]
         public async Task<IActionResult> ParticipateAsync([FromRoute] string threadId, [FromBody] AddUserToThreadRequestModel model)
         {
             var result = await chatService.AddUserToThreadAsync(model);
 
-            return StatusCode(HttpStatusCode.OK, result > 0);
+            if (result == null)
+            {
+                return StatusCode(HttpStatusCode.NotFound, $"could not find the thread ({threadId})");
+            }
+
+            return StatusCode(HttpStatusCode.OK, result);
         }
 
         /// <summary>
@@ -91,12 +96,17 @@ namespace Sample.Chat.Controllers
         /// <returns></returns>
         [HttpPatch]
         [Route("threads/{threadId}/leave")]
-        [Produces(typeof(ApiResponseModel<bool>))]
+        [Produces(typeof(ApiResponseModel<ThreadResponseModel>))]
         public async Task<IActionResult> LeaveAsync([FromRoute] string threadId, [FromBody] RemoveUserFromThreadRequestModel model)
         {
             var result = await chatService.RemoveUserFromThreadAsync(model);
 
-            return StatusCode(HttpStatusCode.OK, result > 0);
+            if (result == null)
+            {
+                return StatusCode(HttpStatusCode.NotFound, $"could not find the thread ({threadId})");
+            }
+
+            return StatusCode(HttpStatusCode.OK, result);
         }
 
         /// <summary>
@@ -106,7 +116,7 @@ namespace Sample.Chat.Controllers
         /// <returns></returns>
         [HttpDelete]
         [Route("thread/{threadId}")]
-        [Produces(typeof(ApiResponseModel<bool>))]
+        [Produces(typeof(ApiResponseModel<string>))]
         public async Task<IActionResult> DeleteThread([FromRoute] string threadId)
         {
             var result = await chatService.DeleteThreadAsync(new DeleteThreadRequest
@@ -115,7 +125,12 @@ namespace Sample.Chat.Controllers
                 Force = false,
             });
 
-            return StatusCode(HttpStatusCode.OK, result > 0);
+            if (result == 0)
+            {
+                return StatusCode(HttpStatusCode.NotFound, $"could not find the thread ({threadId})");
+            }
+
+            return StatusCode(HttpStatusCode.OK, threadId);
         }
 
         /// <summary>
