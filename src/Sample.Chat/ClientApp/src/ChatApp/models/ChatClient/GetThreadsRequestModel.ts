@@ -40,17 +40,20 @@ export interface JoinThreadRequestModel {
     threadId: string;
     participantIds: string[];
 }
-
-export type JoinThreadApiResponseModel = ApiResponseModel<boolean>;
+export type JoinThreadResponseModel = GetThreadResponseModel;
+export type JoinThreadApiResponseModel =
+    ApiResponseModel<JoinThreadResponseModel>;
 
 export type LeaveThreadRequestModel = JoinThreadRequestModel;
-export type LeaveThreadApiResponseModel = JoinThreadApiResponseModel;
+export type LeaveThreadResponseModel = GetThreadResponseModel;
+export type LeaveThreadApiResponseModel =
+    ApiResponseModel<LeaveThreadResponseModel>;
 
 export interface DeleteThreadRequestModel {
     threadId: string;
 }
 
-export type DeleteThreadApiResponseModel = ApiResponseModel<boolean>;
+export type DeleteThreadApiResponseModel = ApiResponseModel<string>;
 
 export enum SendMessageContentType {
     Text,

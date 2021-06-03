@@ -8,6 +8,7 @@ import { ChatMessageItem } from './ChatMessageItem';
 import { JoinThreadDialog } from '../JoinThreadDialog';
 
 import './style.css';
+import { Modal } from '../Layouts';
 
 export interface ChatProps {
     onClose?: () => void;
@@ -16,16 +17,18 @@ export interface ChatProps {
 export const Chat = ({ onClose }: ChatProps) => {
     const { user } = useUserApi();
     const {
+        threads,
         chatClient,
-
         selectedThread,
         messages,
         getMessagesAsync,
         sendMessageRequest,
         clearSelectedThread,
+        leaveFromThreadRequest,
     } = useChatApi();
 
     const [joinThreadDialogOpen, setJoinThreadDialogOpen] = useState(false);
+    const [leaveThreadModalOpen, setLeaveThreadModalOpen] = useState(false);
 
     const handleSendMessage = (message: string) => {
         console.info(
@@ -49,9 +52,26 @@ export const Chat = ({ onClose }: ChatProps) => {
         setJoinThreadDialogOpen((_) => true);
     };
 
+    const handleClickLeaveThread = () => {
+        setLeaveThreadModalOpen((_) => true);
+    };
+
     const handleClickClose = () => {
         if (onClose) {
             onClose();
+        }
+    };
+
+    const handleLeaveThreadModalClose = () => {
+        setLeaveThreadModalOpen((_) => false);
+    };
+
+    const handleClickLeaveThreadActual = () => {
+        if (selectedThread && user) {
+            leaveFromThreadRequest({
+                threadId: selectedThread?.id,
+                participantIds: [user.id],
+            });
         }
     };
 
@@ -90,6 +110,17 @@ export const Chat = ({ onClose }: ChatProps) => {
         };
     }, []);
 
+    useEffect(() => {
+        if (threads && selectedThread) {
+            const found = threads.find((x) => x.id === selectedThread?.id);
+            if (!found) {
+                if (onClose) {
+                    onClose();
+                }
+            }
+        }
+    }, [threads, selectedThread]);
+
     return (
         <AuthProvider>
             <div className="is-flex-grow-1 is-position-relative">
@@ -123,6 +154,14 @@ export const Chat = ({ onClose }: ChatProps) => {
                                                 onClick={handleClickInvite}
                                             >
                                                 Invite
+                                            </button>
+                                        </div>
+                                        <div className="control">
+                                            <button
+                                                className="button"
+                                                onClick={handleClickLeaveThread}
+                                            >
+                                                Leave
                                             </button>
                                         </div>
                                         <div className="control">
@@ -165,6 +204,29 @@ export const Chat = ({ onClose }: ChatProps) => {
                 onClose={() => setJoinThreadDialogOpen((_) => false)}
                 thread={selectedThread ?? undefined}
             />
+            <Modal
+                open={leaveThreadModalOpen}
+                title="Confirmation"
+                footer={
+                    <div className="field is-grouped">
+                        <button
+                            className="button is-warning"
+                            onClick={handleClickLeaveThreadActual}
+                        >
+                            Leave
+                        </button>
+                        <button
+                            className="button"
+                            onClick={handleLeaveThreadModalClose}
+                        >
+                            No
+                        </button>
+                    </div>
+                }
+                onClose={handleLeaveThreadModalClose}
+            >
+                Do you leave this thread?
+            </Modal>
         </AuthProvider>
     );
 };

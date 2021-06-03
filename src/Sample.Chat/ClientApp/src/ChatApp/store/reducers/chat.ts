@@ -68,12 +68,29 @@ export const threads = createReducer<GetThreadResponseModel[], RootAction>([])
         }
         return state;
     })
-    .handleAction([rootAction.chat.createThread.success], (state, action) => {
+    .handleAction(
+        [
+            rootAction.chat.createThread.success,
+            rootAction.chat.joinThread.success,
+        ],
+        (state, action) => {
+            const index = state.findIndex(
+                (x) => x.id === action.payload.data.id,
+            );
+            if (index >= 0) {
+                state.splice(index, 1, action.payload.data);
+            } else {
+                state.splice(0, 0, action.payload.data);
+            }
+
+            return [...state];
+        },
+    )
+    .handleAction([rootAction.chat.leaveThread.success], (state, action) => {
         const index = state.findIndex((x) => x.id === action.payload.data.id);
+
         if (index >= 0) {
-            state.splice(index, 1, action.payload.data);
-        } else {
-            state.splice(0, 0, action.payload.data);
+            state.splice(index, 1);
         }
 
         return [...state];
