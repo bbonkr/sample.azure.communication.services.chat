@@ -1,5 +1,6 @@
 import { ActionType, createAction, createAsyncAction } from 'typesafe-actions';
 import { ChatMessage, ChatThreadClient } from '@azure/communication-chat';
+import { ChatMessageReceivedEvent } from '@azure/communication-signaling';
 import { AddChatMessagesModel, ChatParticipant } from '../../models/ChatClient';
 import { ApiResponseModel } from '../../models';
 import {
@@ -101,9 +102,29 @@ export const clearChatMessages = createAction('clear-chat-message')();
 
 export const clearSentMessageIds = createAction('clear-sent-message-ids')();
 
+export const setIsReadyChatClient = createAction(
+    'set-chat-client-is-ready',
+)<boolean>();
+
 export const setIsChatRealTimeNotificationStarted = createAction(
     'set-chat-client-started',
 )<boolean>();
+
+export const setIsAddedChatClientEvents = createAction(
+    'set-is-added-chat-client-events',
+)<boolean>();
+
+export const addReceivedChatMessage = createAction(
+    'add-received-chat-message',
+)<ChatMessageReceivedEvent>();
+
+export const removeReceivedChatMessage = createAction(
+    'remove-received-chat-message',
+)<string>();
+
+export const clearReceivedChatMessage = createAction(
+    'clear-received-chat-message',
+)();
 
 export const chatActions = {
     getThreads,
@@ -126,7 +147,14 @@ export const chatActions = {
     deleteChatMessage,
     clearChatMessages,
     clearSentMessageIds,
+    setIsReadyChatClient,
     setIsChatRealTimeNotificationStarted,
+    setIsAddedChatClientEvents,
+
+    // received message
+    addReceivedChatMessage,
+    removeReceivedChatMessage,
+    clearReceivedChatMessage,
 };
 
 export type ChatActions = ActionType<typeof chatActions>;

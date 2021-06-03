@@ -33,7 +33,7 @@ export const JoinThreadDialog = ({
     );
 
     const canCreateOrJoin = useMemo(() => {
-        if (thread) {
+        if (!thread) {
             if (!topic) {
                 return false;
             }
@@ -122,9 +122,11 @@ export const JoinThreadDialog = ({
                 {thread ? `Join ${thread.topic}` : 'Create a new'} thread
             </p>
 
-            <div className="p-3">
-                <TopicForm onChange={handleChangeTopic} />
-            </div>
+            {!thread && (
+                <div className="p-3">
+                    <TopicForm onChange={handleChangeTopic} />
+                </div>
+            )}
 
             <div className="p-3">
                 <UserSearchForm onSearch={handleChangeSearchKeyword} />

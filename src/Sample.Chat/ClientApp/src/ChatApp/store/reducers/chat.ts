@@ -5,6 +5,7 @@ import {
     ChatMessage,
     ChatThreadClient,
 } from '@azure/communication-chat';
+import { ChatMessageReceivedEvent } from '@azure/communication-signaling';
 import { AzureCommunicationTokenCredential } from '@azure/communication-common';
 import { ApiResponseModel } from '../../models';
 import {
@@ -130,11 +131,15 @@ const chatClient = createReducer<ChatClient | null, RootAction>(null)
         [rootAction.user.loadUser.success, rootAction.user.createUser.success],
         (state, action) => {
             console.info(action.type);
+            if (state) {
+                return state;
+            }
             const { token, gatewayUrl } = action.payload.data;
             const tokenCredential = new AzureCommunicationTokenCredential(
                 token,
             );
             const client = new ChatClient(gatewayUrl, tokenCredential);
+
             return client;
         },
     )
@@ -146,7 +151,12 @@ const chatClient = createReducer<ChatClient | null, RootAction>(null)
             rootAction.user.createUser.failure,
             rootAction.user.clearUser,
         ],
-        (_, __) => null,
+        (state, __) => {
+            if (state) {
+                state.stopRealtimeNotifications();
+            }
+            return null;
+        },
     );
 
 const selectedThread = createReducer<GetThreadResponseModel | null, RootAction>(
@@ -241,13 +251,46 @@ export const participants = createReducer<ChatParticipant[], RootAction>([])
     })
     .handleAction([rootAction.chat.clearParticipants], (_, __) => []);
 
+const isChatClientReady = createReducer<boolean, RootAction>(
+    false,
+).handleAction([rootAction.chat.setIsReadyChatClient], (_, action) => true);
+
 export const isChatRealTimeNotificationStarted = createReducer<
     boolean,
     RootAction
 >(false).handleAction(
     [rootAction.chat.setIsChatRealTimeNotificationStarted],
-    (_, action) => action.payload,
+    (state, action) => action.payload,
 );
+
+const isAddedChatClientEvents = createReducer<boolean, RootAction>(
+    false,
+).handleAction(
+    [rootAction.chat.setIsAddedChatClientEvents],
+    (state, action) => action.payload,
+);
+
+const receivedMessages = createReducer<ChatMessageReceivedEvent[], RootAction>(
+    [],
+)
+    .handleAction([rootAction.chat.addReceivedChatMessage], (state, action) => {
+        const found = state.find((x) => x.id === action.payload.id);
+        if (!found) {
+            state.push(action.payload);
+        }
+
+        return [...state];
+    })
+    .handleAction([rootAction.chat.removeParticipant], (state, action) => {
+        const index = state.findIndex((x) => x.id === action.payload);
+
+        if (index >= 0) {
+            state.splice(index, 1);
+        }
+
+        return [...state];
+    })
+    .handleAction([rootAction.chat.clearReceivedChatMessage], (_, __) => []);
 
 export const chatState = combineReducers({
     threads,
@@ -260,7 +303,10 @@ export const chatState = combineReducers({
     chatThreadClient,
     participants,
     messages,
+    isChatClientReady,
     isChatRealTimeNotificationStarted,
+    isAddedChatClientEvents,
+    receivedMessages,
 });
 
 export type ChatState = ReturnType<typeof chatState>;

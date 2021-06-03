@@ -12,6 +12,7 @@ export const Thread = () => {
     const { user } = useUserApi();
     const { addMessage } = useMessaging();
     const {
+        chatClient,
         threads,
         isLoadingThreads,
         getThreadsRequest,
@@ -22,6 +23,9 @@ export const Thread = () => {
         selectThread,
         clearSelectedThread,
         startChatClient,
+        addEventListeners,
+        isChatRealTimeNotificationStarted,
+        isAddedChatClientEvents,
     } = useChatApi();
 
     const [page, setPage] = useState(1);
@@ -70,8 +74,18 @@ export const Thread = () => {
     }, [chatError]);
 
     useEffect(() => {
-        console.info('selectedThreadId', selectedThreadId);
-    }, [selectedThreadId]);
+        if (chatClient && isChatRealTimeNotificationStarted) {
+            console.info(
+                '🔨 isChatRealTimeNotificationStarted',
+                isChatRealTimeNotificationStarted,
+            );
+            addEventListeners(chatClient);
+        }
+    }, [isChatRealTimeNotificationStarted]);
+
+    useEffect(() => {
+        console.info('selectedThreadId', selectedThread?.id, selectedThreadId);
+    }, [selectedThread, selectedThreadId]);
 
     return (
         <AuthProvider>

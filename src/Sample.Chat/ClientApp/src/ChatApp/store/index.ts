@@ -16,14 +16,6 @@ export const epicMiddleware = createEpicMiddleware<
     dependencies: services,
 });
 
-const middlewares = [epicMiddleware];
-
-const enhancer = composeWithDevTools(applyMiddleware(...middlewares));
-const initialiState = {};
-
-const store = createStore(rootState, initialiState, enhancer);
-epicMiddleware.run(rootEpic);
-
 const initStore = (preloadedState?: RootState) => {
     const epicMiddleware = createEpicMiddleware<
         RootAction,
@@ -74,5 +66,3 @@ export const useStore = (initialState?: RootState) => {
 
     return store;
 };
-
-export default store;

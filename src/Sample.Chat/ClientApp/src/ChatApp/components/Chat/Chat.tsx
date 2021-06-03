@@ -16,11 +16,13 @@ export interface ChatProps {
 export const Chat = ({ onClose }: ChatProps) => {
     const { user } = useUserApi();
     const {
-        chatThreadClient,
+        chatClient,
+
         selectedThread,
         messages,
         getMessagesAsync,
         sendMessageRequest,
+        clearSelectedThread,
     } = useChatApi();
 
     const [joinThreadDialogOpen, setJoinThreadDialogOpen] = useState(false);
@@ -54,16 +56,39 @@ export const Chat = ({ onClose }: ChatProps) => {
     };
 
     useEffect(() => {
-        if (chatThreadClient) {
-            getMessagesAsync()
-                .then(() => {
-                    console.info('messages loaded');
-                })
-                .catch((err) => {
-                    console.error('messages could not load.', err);
-                });
+        if (chatClient && selectedThread) {
+            const chatThreadClient = chatClient.getChatThreadClient(
+                selectedThread.id,
+            );
+            if (chatThreadClient) {
+                getMessagesAsync(chatThreadClient)
+                    .then(() => {
+                        console.info('🔨 messages loaded');
+                    })
+                    .catch((err) => {
+                        console.error('❌ messages could not load.', err);
+                    });
+            }
         }
-    }, [chatThreadClient]);
+    }, []);
+
+    useEffect(() => {
+        if (messages && messages.length > 0) {
+            const appElement = document.querySelector('#app');
+            if (appElement) {
+                window.scrollTo({
+                    top: appElement?.scrollHeight ?? 0,
+                    behavior: 'smooth',
+                });
+            }
+        }
+    }, [messages]);
+
+    useEffect(() => {
+        return () => {
+            clearSelectedThread();
+        };
+    }, []);
 
     return (
         <AuthProvider>
