@@ -64,9 +64,10 @@ namespace Sample.Chat.Services
             }
 
             var result = await query.AsNoTracking()
-                .OrderByDescending(x => x.CreatedAt)
+                .OrderByDescending(x => x.UpdatedAt)
+                .ThenByDescending(x => x.CreatedAt)
                 .Select(x => mapper.Map<ThreadResponseModel>(x))
-               .ToPagedModelAsync(page, limit, cancellationToken);
+                .ToPagedModelAsync(page, limit, cancellationToken);
 
             return result;
         }
@@ -96,6 +97,8 @@ namespace Sample.Chat.Services
                 {
                     UserId = userId,
                 }).ToList(),
+                CreatedAt = DateTimeOffset.UtcNow,
+                UpdatedAt = DateTimeOffset.UtcNow,
             };
 
             dbContext.Threads.Add(thread);
@@ -370,6 +373,14 @@ namespace Sample.Chat.Services
                 throw new ArgumentException($"Could not find the user. ({model.SenderId})", nameof(model.SenderId));
             }
 
+            var thread = await dbContext.Threads.Where(x => x.Id == model.ThreadId)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if(thread == null)
+            {
+                throw new ArgumentException($"Could not find the thread. ({model.ThreadId})", nameof(model.ThreadId));
+            }
+
             var chatClient = await GetUserChatClientAsync(model.SenderId, cancellationToken);
 
             var chatThreadClient = chatClient.GetChatThreadClient(model.ThreadId);
@@ -388,7 +399,17 @@ namespace Sample.Chat.Services
 
             responseModel.Content.initiator = mapper.Map<CommunicationUserIdentifierModel>((message.Value.Content?.Initiator as CommunicationUserIdentifier));
 
-            
+            thread.UpdatedAt = DateTimeOffset.UtcNow;
+
+            try
+            {
+                await dbContext.SaveChangesAsync(cancellationToken);
+            }
+            catch(Exception ex)
+            {
+                // Logging and keep going.
+                logger.LogError($"[{nameof(ChatService)}] {nameof(SendMessageAsync)} Could not update thread updatedAt. ThreadId={model.ThreadId}", ex);
+            }
 
             return responseModel;
         }
@@ -456,7 +477,7 @@ namespace Sample.Chat.Services
             var chatClient = new ChatClient(
             new Uri(azureCommunicationServicesOptions.GatewayUrl),
             new Azure.Communication.CommunicationTokenCredential(token)
-            ); ;
+            );
 
             return chatClient;
         }

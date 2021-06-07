@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Sample.Chat.Services.Models
 {
@@ -35,6 +36,10 @@ namespace Sample.Chat.Services.Models
         public string Topic { get; set; }
 
         public IEnumerable<Participant> Participants { get; set; }
+
+        public DateTimeOffset? CreatedOn { get; set; }
+
+        public DateTimeOffset? UpdatedOn { get; set; }
     }
 
     public class Participant
