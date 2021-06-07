@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import dayjs from 'dayjs';
 import { useChatApi } from '../../hooks/useChatApi';
 import { useUserApi } from '../../hooks/useUserApi';
 import { SendMessageContentType } from '../../models/ChatClient';
@@ -9,6 +10,8 @@ import { JoinThreadDialog } from '../JoinThreadDialog';
 
 import './style.css';
 import { Modal } from '../Layouts';
+import { setChatThreadClient } from '../../store/actions/chat';
+import { ChatThreadClient } from '@azure/communication-chat';
 
 export interface ChatProps {
     onClose?: () => void;
@@ -25,10 +28,18 @@ export const Chat = ({ onClose }: ChatProps) => {
         sendMessageRequest,
         clearSelectedThread,
         leaveFromThreadRequest,
+        setChatThreadClient,
     } = useChatApi();
 
     const [joinThreadDialogOpen, setJoinThreadDialogOpen] = useState(false);
     const [leaveThreadModalOpen, setLeaveThreadModalOpen] = useState(false);
+    // Thread has been created on
+    const [threadCreatedOn, setThreadCreatedOn] = useState<Date>();
+    const [chatMessageStart, setChatMessageStart] = useState<Date>(() =>
+        dayjs().add(-1, 'd').toDate(),
+    );
+
+    const [threadClient, setThreadClient] = useState<ChatThreadClient>();
 
     const handleSendMessage = (message: string) => {
         console.info(
@@ -75,13 +86,38 @@ export const Chat = ({ onClose }: ChatProps) => {
         }
     };
 
+    const handleClickGetPreviousChatMessages = () => {
+        if (threadClient) {
+            const start = dayjs(chatMessageStart).add(-1, 'd').toDate();
+            setChatMessageStart((_) => start);
+
+            getMessagesAsync(threadClient, start)
+                .then(() => {
+                    console.info('🔨 messages loaded');
+                })
+                .catch((err) => {
+                    console.error('❌ messages could not load.', err);
+                });
+        }
+    };
+
     useEffect(() => {
         if (chatClient && selectedThread) {
             const chatThreadClient = chatClient.getChatThreadClient(
                 selectedThread.id,
             );
             if (chatThreadClient) {
-                getMessagesAsync(chatThreadClient)
+                setChatThreadClient(chatThreadClient);
+                setThreadClient((_) => chatThreadClient);
+
+                const getThreadCreateOn = async () => {
+                    const threadProperties =
+                        await chatThreadClient.getProperties();
+                    setThreadCreatedOn((_) => threadProperties.createdOn);
+                };
+                getThreadCreateOn();
+
+                getMessagesAsync(chatThreadClient, chatMessageStart)
                     .then(() => {
                         console.info('🔨 messages loaded');
                     })
@@ -90,7 +126,7 @@ export const Chat = ({ onClose }: ChatProps) => {
                     });
             }
         }
-    }, []);
+    }, [selectedThread]);
 
     useEffect(() => {
         if (messages && messages.length > 0) {
@@ -180,6 +216,20 @@ export const Chat = ({ onClose }: ChatProps) => {
                     <div className="hero-body has-background-light is-align-items-flex-start">
                         <div className="chat-container">
                             <ul className="is-flex-grow-1 is-scroll-y">
+                                <li className="chat-message system">
+                                    <button
+                                        className="button"
+                                        disabled={
+                                            !threadCreatedOn ||
+                                            threadCreatedOn > chatMessageStart
+                                        }
+                                        onClick={
+                                            handleClickGetPreviousChatMessages
+                                        }
+                                    >
+                                        Load more
+                                    </button>
+                                </li>
                                 {messages
                                     .sort((a, b) =>
                                         a.createdOn > b.createdOn ? 1 : -1,

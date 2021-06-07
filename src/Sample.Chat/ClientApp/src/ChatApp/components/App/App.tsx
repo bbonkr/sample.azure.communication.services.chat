@@ -14,7 +14,7 @@ const SignIn = React.lazy(() => import('../SignIn'));
 const SignUp = React.lazy(() => import('../SignUp'));
 const NotFound = React.lazy(() => import('../NotFound'));
 const Thread = React.lazy(() => import('../Thread'));
-const Chat = React.lazy(() => import('../Chat'));
+// const Chat = React.lazy(() => import('../Chat'));
 
 const helmetContext = {};
 
@@ -49,9 +49,9 @@ export const App = () => {
                                     <Route path="/threads" exact>
                                         <Thread />
                                     </Route>
-                                    <Route path="/chats/:id" exact>
+                                    {/* <Route path="/chats/:id" exact>
                                         <Chat />
-                                    </Route>
+                                    </Route> */}
                                     <Route path="/loading">
                                         <Loading />
                                     </Route>

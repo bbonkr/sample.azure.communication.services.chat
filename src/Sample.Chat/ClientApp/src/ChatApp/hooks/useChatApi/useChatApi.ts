@@ -1,7 +1,7 @@
 import { useCallback, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { Dispatch } from 'redux';
 import debounce from 'lodash/debounce';
+import dayjs from 'dayjs';
 import {
     ChatMessage,
     ChatClient,
@@ -12,6 +12,7 @@ import {
     ChatMessageReceivedEvent,
 } from '@azure/communication-signaling';
 import {
+    AddChatMessagesModel,
     ChatParticipant,
     CreateThreadRequestModel,
     DeleteThreadRequestModel,
@@ -140,23 +141,10 @@ export const useChatApi = () => {
     };
 
     const addChatMessages = useCallback(
-        (threadId: string, messages: ChatMessage[]) => {
-            console.info(
-                'addChatMessages',
-                threadId,
-                state.selectedThreadId,
-                state.selectedThread,
-                threadId === state.selectedThread?.id,
-                threadId === state.selectedThreadId,
-            );
-            if (threadId === state.selectedThread?.id) {
+        (model: AddChatMessagesModel) => {
+            if (model.threadId === state.selectedThread?.id) {
+                dispatch(rootAction.chat.addChatMessages(model));
             }
-            dispatch(
-                rootAction.chat.addChatMessages({
-                    threadId: threadId,
-                    messages,
-                }),
-            );
         },
         [state],
     );
@@ -167,6 +155,18 @@ export const useChatApi = () => {
 
     const deleteChatMessage = (message: Partial<Pick<ChatMessage, 'id'>>) => {
         dispatch(rootAction.chat.deleteChatMessage(message));
+    };
+
+    const updateThreadListOrder = (threadId: string, updateOn?: Date) => {
+        let thread = state.threads.find((x) => x.id === threadId);
+
+        if (!thread) {
+            // get thread
+        } else {
+            thread.updatedOn = updateOn ?? new Date();
+
+            dispatch(rootAction.chat.updateThread(thread));
+        }
     };
 
     const getChatMessage = (ids: string[]): ChatMessage[] => {
@@ -187,10 +187,14 @@ export const useChatApi = () => {
         startTime?: Date,
     ) => {
         const loadedMessage: ChatMessage[] = [];
+
+        let now = new Date();
+
+        now = dayjs(now).add(-1, 'M').toDate();
         try {
             for await (const message of chatThreadClient.listMessages({
                 maxPageSize: 20,
-                startTime: startTime,
+                startTime: startTime ?? now,
             })) {
                 loadedMessage.push(message);
             }
@@ -198,7 +202,10 @@ export const useChatApi = () => {
             console.error('❌ getMessagesAsync', err);
         }
         if (loadedMessage.length > 0) {
-            addChatMessages(chatThreadClient.threadId, loadedMessage);
+            addChatMessages({
+                threadId: chatThreadClient.threadId,
+                messages: loadedMessage,
+            });
         }
     };
 
@@ -220,12 +227,19 @@ export const useChatApi = () => {
                             messages: [chatMessage],
                         }),
                     );
+                } else {
+                    updateThreadListOrder(r.threadId, r.createdOn);
                 }
 
                 dispatch(rootAction.chat.removeReceivedChatMessage(r.id));
             });
         }
     }, [state.receivedMessages]);
+
+    useEffect(() => {
+        if (state.selectedThread) {
+        }
+    }, [state.selectedThread]);
 
     return {
         ...state,
@@ -240,18 +254,23 @@ export const useChatApi = () => {
             dispatch(rootAction.chat.leaveThread.request(payload)),
         deleteThreadRequest: (payload: DeleteThreadRequestModel) =>
             dispatch(rootAction.chat.deleteThread.request(payload)),
-        sendMessageRequest: (payload: SendMessageRequestModel) =>
-            dispatch(rootAction.chat.sendMessage.request(payload)),
+        sendMessageRequest: (payload: SendMessageRequestModel) => {
+            dispatch(rootAction.chat.sendMessage.request(payload));
+            updateThreadListOrder(payload.threadId);
+        },
         sendFileRequest: (payload: SendFileRequestModel) =>
             dispatch(rootAction.chat.sendFile.request(payload)),
         getMessagesAsync,
         startChatClient,
         stopChatClient,
         addEventListeners,
-
+        setChatThreadClient: (payload?: ChatThreadClient) =>
+            dispatch(rootAction.chat.setChatThreadClient(payload)),
         selectThread: (id: string) => {
+            dispatch(rootAction.chat.setChatThreadClient(undefined));
             const { threads } = state;
             const found = threads.find((x) => x.id === id);
+
             dispatch(rootAction.chat.clearChatMessages());
             dispatch(rootAction.chat.clearParticipants());
             dispatch(rootAction.chat.selectThreadId(id));
@@ -262,6 +281,7 @@ export const useChatApi = () => {
             dispatch(rootAction.chat.clearParticipants());
             dispatch(rootAction.chat.selectThreadId(undefined));
             dispatch(rootAction.chat.selectThread(undefined));
+            dispatch(rootAction.chat.setChatThreadClient(undefined));
         },
         addChatMessages,
         updateChatMessage,

@@ -66,6 +66,9 @@ export const sendFile = createAsyncAction(
 export const appendThread =
     createAction('append-thread')<GetThreadResponseModel>();
 
+export const updateThread =
+    createAction('update-thread')<GetThreadResponseModel>();
+
 export const removeThread = createAction('remove-thread')<string>();
 
 export const selectThread =
@@ -135,6 +138,7 @@ export const chatActions = {
     sendMessage,
     sendFile,
     appendThread,
+    updateThread,
     removeThread,
     selectThread,
     selectThreadId,

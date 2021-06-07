@@ -6,6 +6,7 @@ import { AuthProvider } from '../AuthProvider';
 import { SendMessageContentType } from '../../models/ChatClient';
 import { Chat } from '../Chat';
 import { JoinThreadDialog } from '../JoinThreadDialog';
+import { ThreadListItem } from './ThreadListItem';
 
 export const Thread = () => {
     const limit = 20;
@@ -91,31 +92,31 @@ export const Thread = () => {
         <AuthProvider>
             <div className="is-flex ">
                 <div className="">
-                    <h2>Thread</h2>
-                    <div>
-                        <button
-                            type="button"
-                            className="button is-primary"
-                            onClick={handleCreateThread}
-                            disabled={isLoadingThreads}
-                        >
-                            New thread
-                        </button>
+                    <div className="p-3">
+                        <div className="mt-3">
+                            <button
+                                type="button"
+                                className="button is-primary"
+                                onClick={handleCreateThread}
+                                disabled={isLoadingThreads}
+                            >
+                                New thread
+                            </button>
+                        </div>
+                        <hr className="mt-3" />
+
+                        <ul>
+                            {threads.map((t) => (
+                                <li
+                                    className="mt-3"
+                                    key={t.id}
+                                    onClick={handleClickThread(t.id)}
+                                >
+                                    <ThreadListItem thread={t} />
+                                </li>
+                            ))}
+                        </ul>
                     </div>
-                    <ul>
-                        {threads.map((t) => (
-                            <li key={t.id} onClick={handleClickThread(t.id)}>
-                                {t.topic}
-                                <ul>
-                                    {t.participants.map((p) => (
-                                        <li key={p.displayName}>
-                                            {p.displayName}
-                                        </li>
-                                    ))}
-                                </ul>
-                            </li>
-                        ))}
-                    </ul>
                 </div>
                 {selectedThread && <Chat onClose={handleCloseChat} />}
             </div>

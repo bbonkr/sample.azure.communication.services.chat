@@ -20,6 +20,8 @@ export interface GetThreadResponseModel {
     id: string;
     topic: string;
     participants: ThreadParticipantDisplayName[];
+    createdOn: Date;
+    updatedOn?: Date;
 }
 
 export type GetThreadsApiResponseModel = ApiResponseModel<

@@ -14,6 +14,12 @@ import {
 } from '../../models/ChatClient';
 import { rootAction, RootAction } from '../actions';
 
+const threadCompFn = (
+    a: GetThreadResponseModel,
+    b: GetThreadResponseModel,
+): number =>
+    (a.updatedOn ?? a.createdOn) > (b.updatedOn ?? b.createdOn) ? -1 : 1;
+
 export const isLoadingThreads = createReducer<boolean, RootAction>(false)
     .handleAction(
         [
@@ -49,22 +55,30 @@ export const isLoadingThreads = createReducer<boolean, RootAction>(false)
 export const threads = createReducer<GetThreadResponseModel[], RootAction>([])
     .handleAction([rootAction.chat.getThreads.success], (state, action) => {
         if (action.payload.data.currentPage === 1) {
-            return [...action.payload.data.items];
+            return [...action.payload.data.items].sort(threadCompFn);
         } else {
-            return [...state, ...action.payload.data.items];
+            return [...state, ...action.payload.data.items].sort(threadCompFn);
         }
     })
     .handleAction([rootAction.chat.appendThread], (state, action) => {
         const index = state.findIndex((x) => x.id === action.payload.id);
         if (index < 0) {
-            return [action.payload, ...state];
+            return [action.payload, ...state].sort(threadCompFn);
         }
         return state;
+    })
+    .handleAction([rootAction.chat.updateThread], (state, action) => {
+        const index = state.findIndex((x) => x.id === action.payload.id);
+        if (index >= 0) {
+            state.splice(index, 1, action.payload);
+        }
+        return state.sort(threadCompFn);
     })
     .handleAction([rootAction.chat.removeThread], (state, action) => {
         const index = state.findIndex((x) => x.id === action.payload);
         if (index >= 0) {
-            return [...state.splice(index, 1)];
+            state.splice(index, 1);
+            return [...state].sort(threadCompFn);
         }
         return state;
     })
@@ -83,7 +97,7 @@ export const threads = createReducer<GetThreadResponseModel[], RootAction>([])
                 state.splice(0, 0, action.payload.data);
             }
 
-            return [...state];
+            return [...state].sort(threadCompFn);
         },
     )
     .handleAction([rootAction.chat.leaveThread.success], (state, action) => {
@@ -93,7 +107,7 @@ export const threads = createReducer<GetThreadResponseModel[], RootAction>([])
             state.splice(index, 1);
         }
 
-        return [...state];
+        return [...state].sort(threadCompFn);
     });
 
 export const hasMoreThreads = createReducer<boolean, RootAction>(true)
@@ -298,15 +312,18 @@ const receivedMessages = createReducer<ChatMessageReceivedEvent[], RootAction>(
 
         return [...state];
     })
-    .handleAction([rootAction.chat.removeParticipant], (state, action) => {
-        const index = state.findIndex((x) => x.id === action.payload);
+    .handleAction(
+        [rootAction.chat.removeReceivedChatMessage],
+        (state, action) => {
+            const index = state.findIndex((x) => x.id === action.payload);
 
-        if (index >= 0) {
-            state.splice(index, 1);
-        }
+            if (index >= 0) {
+                state.splice(index, 1);
+            }
 
-        return [...state];
-    })
+            return [...state];
+        },
+    )
     .handleAction([rootAction.chat.clearReceivedChatMessage], (_, __) => []);
 
 export const chatState = combineReducers({
