@@ -51,9 +51,7 @@ namespace Sample.Chat
 
             services.AddControllersWithViews();
             
-            services.AddApiVersioningAndSwaggerGen(defaultVersion);
-
-         
+            services.AddApiVersioningAndSwaggerGen(defaultVersion);         
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -68,9 +66,7 @@ namespace Sample.Chat
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                app.UseSwaggerUIWithApiVersioning();
-
-            
+                app.UseSwaggerUIWithApiVersioning();            
             }
             
             app.UseHttpsRedirection();
