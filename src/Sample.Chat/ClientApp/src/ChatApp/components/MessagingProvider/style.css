@@ -1,0 +1,14 @@
+.messaging-container {
+    position: absolute;
+    top: 0;
+    right: 0;  
+    bottom: 0;
+    overflow-y: hidden;
+}
+
+.messaging-container>div,
+.messaging-container>article {
+    z-index: 2000;
+    width: 100%;
+    max-width: 320px;
+}

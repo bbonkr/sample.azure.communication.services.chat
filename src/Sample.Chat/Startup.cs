@@ -21,12 +21,15 @@ namespace Sample.Chat
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        public Startup(IConfiguration configuration, IWebHostEnvironment webHostEnvironment)
         {
             Configuration = configuration;
+            WebHostEnvironment = webHostEnvironment;
         }
 
         public IConfiguration Configuration { get; }
+
+        public IWebHostEnvironment WebHostEnvironment { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
@@ -35,7 +38,7 @@ namespace Sample.Chat
             var connectionString = Configuration.GetConnectionString("Default");
 
             services.ConfigureAppOptions(Configuration);
-
+            
             services.AddChatServices(Configuration);
 
             services.AddDbContext<DefaultDbContext>(options =>
@@ -46,9 +49,9 @@ namespace Sample.Chat
                 });
             });
 
-            services.AddControllers();
+            services.AddControllersWithViews();
             
-            services.AddApiVersioningAndSwaggerGen(defaultVersion);
+            services.AddApiVersioningAndSwaggerGen(defaultVersion);         
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -63,10 +66,11 @@ namespace Sample.Chat
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                app.UseSwaggerUIWithApiVersioning();
+                app.UseSwaggerUIWithApiVersioning();            
             }
             
             app.UseHttpsRedirection();
+            app.UseStaticFiles();
 
             app.UseRouting();
 
@@ -75,6 +79,7 @@ namespace Sample.Chat
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapFallbackToController("Index", "Home");
             });
         }
     }

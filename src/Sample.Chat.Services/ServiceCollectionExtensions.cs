@@ -1,6 +1,7 @@
 ﻿using System;
 
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.DependencyInjection;
 
 using Sample.Chat.Services.Mappers;
@@ -21,8 +22,35 @@ namespace Sample.Chat.Services
                 options.GatewayUrl = gateway;
             });
 
+            services.Configure<FileServiceOptions>(options =>
+            {
+                var sections = configuration.GetSection(FileServiceOptions.Name).GetChildren();
+                foreach (var section in sections)
+                {
+                    if (section.Key == nameof(options.Container))
+                    {
+                        options.Container = section.Value;
+                    }
+
+                    if (section.Key == nameof(options.AccessEndPoint))
+                    {
+                        var url = section.Value;
+                        if (url.EndsWith("/"))
+                        {
+                            url = url.Substring(0, url.Length - 1);
+                        }
+
+                        options.AccessEndPoint = url;
+                    }
+                }
+            });
+
             services.AddAutoMapper(typeof(UserProfile).Assembly);
-            
+
+            services.AddTransient<IUserService, UserService>();
+            services.AddTransient<IChatService, ChatService>();
+            services.AddTransient<IUserTokenManager, UserTokenManager>();
+            services.AddTransient<IFileService, FileService>();
 
             return services;
         }

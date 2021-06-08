@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Sample.Chat.Entities
 {
@@ -8,6 +9,11 @@ namespace Sample.Chat.Entities
 
         public string Topic { get; set; }
 
-        public virtual ICollection<ThreadParticipant> Prticipants { get; set; }
+        public DateTimeOffset CreatedAt { get; set; }
+
+        public DateTimeOffset UpdatedAt { get; set; }
+
+        public virtual ICollection<ThreadParticipant> Participants { get; set; }
+
     }
 }

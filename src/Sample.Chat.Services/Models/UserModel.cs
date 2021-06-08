@@ -16,18 +16,23 @@ namespace Sample.Chat.Services.Models
 
         public string Token { get; set; }
 
+        public string GatewayUrl { get; set; }
+
         public long ExpiresOn { get; set; }
     }
 
     public class CreateUserRequestModel
     {
+    
         public string Email { get; set; }
 
+ 
         public string DisplayName { get; set; }
     }
 
     public class GetUserRequestModel
     {
+     
         public string Email { get; set; }
     }
 }

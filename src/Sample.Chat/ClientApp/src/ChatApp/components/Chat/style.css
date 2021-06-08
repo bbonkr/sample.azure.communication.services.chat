@@ -1,0 +1,41 @@
+.chat-container {
+    height: 100%;
+    width: 100%;
+}
+
+.chat-container>ul {
+    display: flex;
+    flex-direction: column;
+
+}
+
+.chat-message {
+    padding: 0.25rem;
+    overflow-wrap: normal;
+    margin-bottom: 0.25rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-message>div {
+
+    padding: 0.75rem;
+}
+
+.chat-message.my {
+    align-self: flex-end;
+}
+
+.chat-message.other {
+    align-self: flex-start;
+}
+
+.chat-message.my>div,
+.chat-message.other>div {
+    border-radius: 0.75rem;
+    border: 1px solid;
+}
+
+.chat-message.system {
+    align-self: center;
+}

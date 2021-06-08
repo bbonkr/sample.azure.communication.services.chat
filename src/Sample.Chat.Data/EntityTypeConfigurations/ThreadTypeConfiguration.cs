@@ -1,4 +1,6 @@
 ﻿
+using System;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -10,7 +12,7 @@ namespace Sample.Chat.Data.EntityTypeConfigurations
     {
         public void Configure(EntityTypeBuilder<Thread> builder)
         {
-            builder.ToTable("Thread");
+            builder.ToTable(nameof(Thread));
 
             builder.HasKey(x => x.Id);
 
@@ -23,6 +25,16 @@ namespace Sample.Chat.Data.EntityTypeConfigurations
                 .HasMaxLength(1000)
                 .IsRequired()
                 .HasComment("Thread topic");
+
+            builder.Property(x => x.CreatedAt)
+                .IsRequired()
+                .HasDefaultValue(DateTimeOffset.UtcNow)
+                .HasComment("Created");
+
+            builder.Property(x => x.UpdatedAt)
+                .IsRequired()
+                .HasDefaultValue(DateTimeOffset.UtcNow)
+                .HasComment("Updated");
         }
     }
 }

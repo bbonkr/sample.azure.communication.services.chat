@@ -10,27 +10,27 @@ namespace Sample.Chat.Data.EntityTypeConfigurations
     {
         public void Configure(EntityTypeBuilder<ThreadParticipant> builder)
         {
-            builder.ToTable("ThreadPrticipant");
+            builder.ToTable(nameof(ThreadParticipant));
 
             builder.HasKey(x => new { x.ThreadId, x.UserId });
 
             builder.Property(x => x.ThreadId)
                 .IsRequired()
                 .HasMaxLength(1000)
-                .HasComment("User identifier; Use Communication user id");
+                .HasComment("Thread identifier");
 
             builder.Property(x => x.UserId)
                 .IsRequired()
                 .HasMaxLength(1000)
-                .HasComment("Thread identifier");
+                .HasComment("User identifier; Use Communication user id");
 
             builder.HasOne(x => x.Thread)
-                .WithMany(x => x.Prticipants)
+                .WithMany(x => x.Participants)
                 .HasForeignKey(x => x.ThreadId);
 
             builder.HasOne(x => x.User)
                 .WithMany(x => x.Threads)
-                .HasForeignKey(x => x.ThreadId);
+                .HasForeignKey(x => x.UserId);
         }
     }
 }

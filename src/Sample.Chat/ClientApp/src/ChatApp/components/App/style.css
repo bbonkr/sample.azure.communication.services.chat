@@ -1,0 +1,47 @@
+html {
+    overflow-y: auto;
+}
+
+/* body,
+#app {
+    display: flex;
+    min-height: 100vh;
+} */
+
+.is-full-width {
+    width: 100% !important;
+}
+
+.is-full-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.is-position-relative {
+    position: relative;
+}
+
+.is-position-absolute {
+    position: absolute;
+}
+
+.is-inset-0 {
+    top:0;
+    left:0;
+    right:0;
+    bottom:0; 
+}
+
+.is-full-height {
+    height: 100% !important;
+}
+
+.is-scroll-y {
+    overflow-y: auto;
+}
