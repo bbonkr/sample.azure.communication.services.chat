@@ -4,6 +4,7 @@ on:
   repository_dispatch:
     types: [start-docker-job]
 
+jobs:
   docker:
     runs-on: ubuntu-latest
     steps:
