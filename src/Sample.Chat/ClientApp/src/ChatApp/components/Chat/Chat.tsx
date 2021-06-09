@@ -26,6 +26,7 @@ export const Chat = ({ onClose }: ChatProps) => {
         messages,
         getMessagesAsync,
         sendMessageRequest,
+        sendFileRequest,
         clearSelectedThread,
         leaveFromThreadRequest,
         setChatThreadClient,
@@ -56,6 +57,16 @@ export const Chat = ({ onClose }: ChatProps) => {
             };
 
             sendMessageRequest(payload);
+        }
+    };
+
+    const handleSendFiles = (files: File[]) => {
+        if (files && user && selectedThread) {
+            sendFileRequest({
+                files: files,
+                senderId: user?.id,
+                threadId: selectedThread?.id,
+            });
         }
     };
 
@@ -245,7 +256,10 @@ export const Chat = ({ onClose }: ChatProps) => {
                         </div>
                     </div>
                     <div className="hero-footer">
-                        <ChatForm onSendMessage={handleSendMessage} />
+                        <ChatForm
+                            onSendMessage={handleSendMessage}
+                            onSendFile={handleSendFiles}
+                        />
                     </div>
                 </div>
             </div>

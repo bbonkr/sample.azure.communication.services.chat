@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { FormState, FormValues, schema } from './ChatFormState';
+import { FaPaperclip } from 'react-icons/fa';
 import * as yup from 'yup';
 
 export interface ChatFormProps {
     onSendMessage?: (message: string) => void;
-    onSendFile?: (files: FileList) => void;
+    onSendFile?: (files: File[]) => void;
 }
 
 export const ChatForm = ({ onSendFile, onSendMessage }: ChatFormProps) => {
@@ -103,6 +104,21 @@ export const ChatForm = ({ onSendFile, onSendMessage }: ChatFormProps) => {
         });
     };
 
+    const handleClickChangeFile = (
+        event: React.ChangeEvent<HTMLInputElement>,
+    ) => {
+        if (event.currentTarget.files) {
+            if (onSendFile) {
+                const files = Array.from(event.currentTarget.files).map(
+                    (f: File) => f,
+                );
+                onSendFile(files);
+
+                event.currentTarget.value = '';
+            }
+        }
+    };
+
     useEffect(() => {
         if (formState?.values) {
             validateFormState()
@@ -121,7 +137,39 @@ export const ChatForm = ({ onSendFile, onSendMessage }: ChatFormProps) => {
                 {/* <label className="label" htmlFor="chat-message">
                     Message
                 </label> */}
+                <p
+                    className={`help ${
+                        !formState.modified.message
+                            ? ''
+                            : formState.errors.message
+                            ? 'is-danger'
+                            : 'is-success'
+                    }`}
+                >
+                    {formState.modified.message ? formState.errors.message : ''}
+                </p>
                 <div className="field has-addons">
+                    <div className="control">
+                        <div className="file">
+                            <label className="file-label">
+                                <input
+                                    className="file-input"
+                                    type="file"
+                                    name="files"
+                                    multiple
+                                    onChange={handleClickChangeFile}
+                                />
+
+                                <span className="file-cta">
+                                    <span className="file-icon">
+                                        <FaPaperclip />
+                                    </span>
+                                    <span className="file-label"></span>
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+
                     <div className="control is-expanded">
                         <textarea
                             name="message"
@@ -137,17 +185,6 @@ export const ChatForm = ({ onSendFile, onSendMessage }: ChatFormProps) => {
                         </button>
                     </div>
                 </div>
-                <p
-                    className={`help ${
-                        !formState.modified.message
-                            ? ''
-                            : formState.errors.message
-                            ? 'is-danger'
-                            : 'is-success'
-                    }`}
-                >
-                    {formState.modified.message ? formState.errors.message : ''}
-                </p>
             </div>
         </form>
     );

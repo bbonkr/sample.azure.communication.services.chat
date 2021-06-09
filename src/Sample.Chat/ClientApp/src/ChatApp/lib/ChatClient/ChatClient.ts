@@ -134,10 +134,22 @@ export class ChatClient extends ApiClientBase {
         )}/files`;
 
         try {
+            const formData = new FormData();
+            formData.append('senderId', model.senderId);
+            formData.append('threadId', model.threadId);
+            model.files.forEach((file) => {
+                formData.append('files', file);
+            });
+
             const response =
                 await this.getClient().post<SendFileApiResponseModel>(
                     url,
-                    model,
+                    formData,
+                    {
+                        headers: {
+                            'Content-Type': 'multipart/form-data',
+                        },
+                    },
                 );
 
             return this.returnsModelIfSucceed(response);
