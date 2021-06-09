@@ -107,12 +107,17 @@ export const JoinThreadDialog = ({
             footer={
                 <div className="field is-grouped">
                     <button
+                        className="button is-primary"
                         onClick={handleClickCreateOrJoin}
                         disabled={isLoadingThreads || !canCreateOrJoin}
                     >
-                        {thread ? 'Join' : 'Create'}
+                        {thread ? 'Invite' : 'Create'}
                     </button>
-                    <button onClick={onClose} disabled={isLoadingThreads}>
+                    <button
+                        className="button"
+                        onClick={onClose}
+                        disabled={isLoadingThreads}
+                    >
                         Cancel
                     </button>
                 </div>

@@ -26,6 +26,7 @@ import {
 import { rootAction } from '../../store/actions';
 import { RootState } from '../../store/reducers';
 import { ChatState } from '../../store/reducers/chat';
+import { AcsHelper } from '../../lib/AcsHelper';
 
 export const useChatApi = () => {
     const dispatch = useDispatch();
@@ -99,6 +100,12 @@ export const useChatApi = () => {
 
         chatClient.on('chatThreadPropertiesUpdated', (e) => {
             console.info('⚡ chatThreadPropertiesUpdated', e);
+            dispatch(
+                rootAction.chat.updateThread({
+                    id: e.threadId,
+                    topic: e.properties.topic,
+                }),
+            );
         });
 
         chatClient.on('chatMessageEdited', (e) => {
@@ -107,13 +114,15 @@ export const useChatApi = () => {
 
         chatClient.on('participantsAdded', (e) => {
             console.info('⚡ participantsAdded', e);
+
             dispatch(
-                rootAction.chat.addParticipants(
-                    e.participantsAdded.map((participant) => ({
-                        id: '', // participant.id.kind,
+                rootAction.chat.addParticipants({
+                    threadId: e.threadId,
+                    participants: e.participantsAdded.map((participant) => ({
+                        id: AcsHelper.parseIdentifier(participant.id)?.id ?? '', // participant.id.kind,
                         displayName: participant.displayName,
                     })),
-                ),
+                }),
             );
         });
 
@@ -272,13 +281,13 @@ export const useChatApi = () => {
             const found = threads.find((x) => x.id === id);
 
             dispatch(rootAction.chat.clearChatMessages());
-            dispatch(rootAction.chat.clearParticipants());
+            // dispatch(rootAction.chat.clearParticipants());
             dispatch(rootAction.chat.selectThreadId(id));
             dispatch(rootAction.chat.selectThread(found));
         },
         clearSelectedThread: () => {
             dispatch(rootAction.chat.clearChatMessages());
-            dispatch(rootAction.chat.clearParticipants());
+            // dispatch(rootAction.chat.clearParticipants());
             dispatch(rootAction.chat.selectThreadId(undefined));
             dispatch(rootAction.chat.selectThread(undefined));
             dispatch(rootAction.chat.setChatThreadClient(undefined));

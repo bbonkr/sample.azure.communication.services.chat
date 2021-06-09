@@ -39,6 +39,7 @@ export const Chat = ({ onClose }: ChatProps) => {
     const [chatMessageStart, setChatMessageStart] = useState<Date>(() =>
         dayjs().add(-1, 'd').toDate(),
     );
+    const [latestMessageId, setLatestMessageId] = useState('');
 
     const [threadClient, setThreadClient] = useState<ChatThreadClient>();
 
@@ -141,12 +142,22 @@ export const Chat = ({ onClose }: ChatProps) => {
 
     useEffect(() => {
         if (messages && messages.length > 0) {
-            const appElement = document.querySelector('#app');
-            if (appElement) {
-                window.scrollTo({
-                    top: appElement?.scrollHeight ?? 0,
-                    behavior: 'smooth',
-                });
+            if (latestMessageId !== messages[messages.length - 1].id) {
+                setLatestMessageId((_) => messages[messages.length - 1].id);
+
+                const scrollElement = document.querySelector('.chat-container');
+                console.info('scroll element: ', scrollElement);
+                if (scrollElement) {
+                    const scrollHeight = scrollElement.scrollHeight;
+                    console.info('scroll to: ', scrollHeight);
+                    window.setTimeout(() => {
+                        scrollElement.scrollTo({
+                            top: scrollHeight,
+                            left: 0,
+                            behavior: 'smooth',
+                        });
+                    }, 200);
+                }
             }
         }
     }, [messages]);
@@ -180,20 +191,19 @@ export const Chat = ({ onClose }: ChatProps) => {
                                         {selectedThread?.topic}
                                     </p>
 
-                                    <ul className="subtitle">
+                                    <div className="is-flex is-flex-wrap-wrap mb-3">
                                         {selectedThread?.participants.map(
                                             (p) => (
-                                                <li key={p.id}>
+                                                <span
+                                                    key={p.id}
+                                                    className="tag is-dark mr-1 mt-1"
+                                                >
                                                     {p.displayName}
-                                                </li>
+                                                </span>
                                             ),
                                         )}
-                                    </ul>
-                                    {/* <button
-                                        className="delete"
-                                        aria-label="close"
-                                        onClick={handleClickClose}
-                                    ></button> */}
+                                    </div>
+
                                     <div className="field is-grouped">
                                         <div className="control">
                                             <button
@@ -226,7 +236,7 @@ export const Chat = ({ onClose }: ChatProps) => {
                     </div>
                     <div className="hero-body has-background-light is-align-items-flex-start">
                         <div className="chat-container">
-                            <ul className="is-flex-grow-1 is-scroll-y">
+                            <ul className="is-flex-grow-1 is-scroll-y ">
                                 <li className="chat-message system">
                                     <button
                                         className="button"

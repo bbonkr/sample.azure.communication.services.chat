@@ -1,7 +1,13 @@
 import { ActionType, createAction, createAsyncAction } from 'typesafe-actions';
 import { ChatMessage, ChatThreadClient } from '@azure/communication-chat';
 import { ChatMessageReceivedEvent } from '@azure/communication-signaling';
-import { AddChatMessagesModel, ChatParticipant } from '../../models/ChatClient';
+import {
+    AddChatMessagesModel,
+    AddParticipantsModel,
+    ChatParticipant,
+    ClearParticipantsModel,
+    RemoveParticipantModel,
+} from '../../models/ChatClient';
 import { ApiResponseModel } from '../../models';
 import {
     CreateThreadApiResponseModel,
@@ -67,7 +73,9 @@ export const appendThread =
     createAction('append-thread')<GetThreadResponseModel>();
 
 export const updateThread =
-    createAction('update-thread')<GetThreadResponseModel>();
+    createAction('update-thread')<
+        Pick<GetThreadResponseModel, 'id'> & Partial<GetThreadResponseModel>
+    >();
 
 export const removeThread = createAction('remove-thread')<string>();
 
@@ -81,14 +89,17 @@ export const setChatThreadClient = createAction('set-chat-thread-client')<
     ChatThreadClient | undefined
 >();
 
-export const addParticipants = createAction('add-chat-participants')<
-    ChatParticipant[]
->();
-export const removeParticipant = createAction('remove-chat-participant')<
-    Partial<Pick<ChatParticipant, 'id'>>
->();
+export const addParticipants = createAction(
+    'add-chat-participants',
+)<AddParticipantsModel>();
 
-export const clearParticipants = createAction('clear-chat-participants')();
+export const removeParticipant = createAction(
+    'remove-chat-participant',
+)<RemoveParticipantModel>();
+
+export const clearParticipants = createAction(
+    'clear-chat-participants',
+)<ClearParticipantsModel>();
 
 export const addChatMessages =
     createAction('add-chat-messages')<AddChatMessagesModel>();

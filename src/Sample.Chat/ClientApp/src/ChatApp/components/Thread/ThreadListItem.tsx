@@ -13,13 +13,13 @@ export const ThreadListItem = ({ thread }: ThreadListItemProps) => {
             </header>
             <div className="card-content">
                 <div className="content">
-                    <ul className="m-0">
+                    <div className="is-flex is-flex-wrap-wrap">
                         {thread.participants.map((p) => (
-                            <span key={p.id} className="tag is-info mr-1">
+                            <span key={p.id} className="tag is-info mr-1 mt-1">
                                 {p.displayName}
                             </span>
                         ))}
-                    </ul>
+                    </div>
                 </div>
             </div>
         </div>
