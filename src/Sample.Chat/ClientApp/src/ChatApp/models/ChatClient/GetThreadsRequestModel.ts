@@ -83,3 +83,17 @@ export interface AddChatMessagesModel {
     threadId: string;
     messages: ChatMessage[];
 }
+
+export interface AddParticipantsModel {
+    threadId: string;
+    participants: ChatParticipant[];
+}
+
+export interface RemoveParticipantModel {
+    threadId: string;
+    participants: (Pick<ChatParticipant, 'id'> & Partial<ChatParticipant>)[];
+}
+
+export interface ClearParticipantsModel {
+    threadId: string;
+}

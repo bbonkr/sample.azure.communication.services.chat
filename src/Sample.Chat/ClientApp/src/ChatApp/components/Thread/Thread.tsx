@@ -42,10 +42,12 @@ export const Thread = () => {
         }
     };
 
-    const handleClickThread = (threadId: string) => () => {
-        console.info('thread clicked. ', threadId);
-        selectThread(threadId);
-    };
+    const handleClickThread =
+        (threadId: string) => (event: React.MouseEvent<HTMLAnchorElement>) => {
+            event.preventDefault();
+            console.info('thread clicked. ', threadId);
+            selectThread(threadId);
+        };
 
     const handleCloseChat = () => {
         clearSelectedThread();
@@ -90,8 +92,8 @@ export const Thread = () => {
 
     return (
         <AuthProvider>
-            <div className="is-flex ">
-                <div className="">
+            <div className="is-flex is-prevent-height-100">
+                <div className="is-flex-1 is-scroll-y">
                     <div className="p-3">
                         <div className="mt-3">
                             <button
@@ -107,18 +109,21 @@ export const Thread = () => {
 
                         <ul>
                             {threads.map((t) => (
-                                <li
-                                    className="mt-3"
-                                    key={t.id}
-                                    onClick={handleClickThread(t.id)}
-                                >
-                                    <ThreadListItem thread={t} />
+                                <li className="mt-3" key={t.id}>
+                                    <a
+                                        href="#chat"
+                                        onClick={handleClickThread(t.id)}
+                                    >
+                                        <ThreadListItem thread={t} />
+                                    </a>
                                 </li>
                             ))}
                         </ul>
                     </div>
                 </div>
-                {selectedThread && <Chat onClose={handleCloseChat} />}
+                <div className="is-flex-3 is-scroll-y chat-container">
+                    {selectedThread && <Chat onClose={handleCloseChat} />}
+                </div>
             </div>
             <JoinThreadDialog
                 open={joinThreadDialogOpen}
