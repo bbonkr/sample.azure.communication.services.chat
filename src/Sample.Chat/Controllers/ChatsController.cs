@@ -115,7 +115,7 @@ namespace Sample.Chat.Controllers
         /// <param name="threadId"></param>
         /// <returns></returns>
         [HttpDelete]
-        [Route("thread/{threadId}")]
+        [Route("threads/{threadId}")]
         [Produces(typeof(ApiResponseModel<string>))]
         public async Task<IActionResult> DeleteThread([FromRoute] string threadId)
         {
