@@ -181,98 +181,91 @@ export const Chat = ({ onClose }: ChatProps) => {
 
     return (
         <AuthProvider>
-            <div className="is-flex-grow-1 is-position-relative">
-                <div className="hero is-fullheight is-position-absolute is-inset-0">
-                    <div className="hero-head">
-                        <header className="hero is-link is-bold">
-                            <div className="hero-body">
-                                <div className="container">
-                                    <p className="title">
-                                        {selectedThread?.topic}
-                                    </p>
+            <div className="hero chat-container-height">
+                <div className="hero-head">
+                    <header className="hero is-link is-bold">
+                        <div className="hero-body">
+                            <div className="container">
+                                <p className="title">{selectedThread?.topic}</p>
 
-                                    <div className="is-flex is-flex-wrap-wrap mb-3">
-                                        {selectedThread?.participants.map(
-                                            (p) => (
-                                                <span
-                                                    key={p.id}
-                                                    className="tag is-dark mr-1 mt-1"
-                                                >
-                                                    {p.displayName}
-                                                </span>
-                                            ),
-                                        )}
+                                <div className="is-flex is-flex-wrap-wrap mb-3">
+                                    {selectedThread?.participants.map((p) => (
+                                        <span
+                                            key={p.id}
+                                            className="tag is-dark mr-1 mt-1"
+                                        >
+                                            {p.displayName}
+                                        </span>
+                                    ))}
+                                </div>
+
+                                <div className="field is-grouped">
+                                    <div className="control">
+                                        <button
+                                            className="button"
+                                            onClick={handleClickInvite}
+                                        >
+                                            Invite
+                                        </button>
                                     </div>
-
-                                    <div className="field is-grouped">
-                                        <div className="control">
-                                            <button
-                                                className="button"
-                                                onClick={handleClickInvite}
-                                            >
-                                                Invite
-                                            </button>
-                                        </div>
-                                        <div className="control">
-                                            <button
-                                                className="button"
-                                                onClick={handleClickLeaveThread}
-                                            >
-                                                Leave
-                                            </button>
-                                        </div>
-                                        <div className="control">
-                                            <button
-                                                className="button"
-                                                onClick={handleClickClose}
-                                            >
-                                                Close
-                                            </button>
-                                        </div>
+                                    <div className="control">
+                                        <button
+                                            className="button"
+                                            onClick={handleClickLeaveThread}
+                                        >
+                                            Leave
+                                        </button>
+                                    </div>
+                                    <div className="control">
+                                        <button
+                                            className="button"
+                                            onClick={handleClickClose}
+                                        >
+                                            Close
+                                        </button>
                                     </div>
                                 </div>
                             </div>
-                        </header>
-                    </div>
-                    <div className="hero-body has-background-light is-align-items-flex-start">
-                        <div className="chat-container">
-                            <ul className="is-flex-grow-1 is-scroll-y ">
-                                <li className="chat-message system">
-                                    <button
-                                        className="button"
-                                        disabled={
-                                            !threadCreatedOn ||
-                                            threadCreatedOn > chatMessageStart
-                                        }
-                                        onClick={
-                                            handleClickGetPreviousChatMessages
-                                        }
-                                    >
-                                        Load more
-                                    </button>
-                                </li>
-                                {messages
-                                    .sort((a, b) =>
-                                        a.createdOn > b.createdOn ? 1 : -1,
-                                    )
-                                    .map((m) => (
-                                        <ChatMessageItem
-                                            key={m.id}
-                                            chatMessage={m}
-                                            user={user ?? undefined}
-                                        />
-                                    ))}
-                            </ul>
                         </div>
-                    </div>
-                    <div className="hero-footer">
-                        <ChatForm
-                            onSendMessage={handleSendMessage}
-                            onSendFile={handleSendFiles}
-                        />
+                    </header>
+                </div>
+                <div className="hero-body has-background-light is-align-items-flex-start">
+                    <div className="chat-container">
+                        <ul className="is-flex-grow-1 is-scroll-y ">
+                            <li className="chat-message system">
+                                <button
+                                    className="button"
+                                    disabled={
+                                        !threadCreatedOn ||
+                                        threadCreatedOn > chatMessageStart
+                                    }
+                                    onClick={handleClickGetPreviousChatMessages}
+                                >
+                                    Load more
+                                </button>
+                            </li>
+                            {messages
+                                .sort((a, b) =>
+                                    a.createdOn > b.createdOn ? 1 : -1,
+                                )
+                                .map((m) => (
+                                    <ChatMessageItem
+                                        key={m.id}
+                                        chatMessage={m}
+                                        user={user ?? undefined}
+                                    />
+                                ))}
+                        </ul>
                     </div>
                 </div>
+                <div className="hero-footer">
+                    <ChatForm
+                        onSendMessage={handleSendMessage}
+                        onSendFile={handleSendFiles}
+                    />
+                </div>
             </div>
+
             <JoinThreadDialog
                 open={joinThreadDialogOpen}
                 onClose={() => setJoinThreadDialogOpen((_) => false)}

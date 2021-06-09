@@ -23,6 +23,7 @@ export const useUserApi = () => {
             dispatch(rootAction.user.deleteUser.request(payload)),
         getUsersRequest: (payload: GetUsersRequestModel) =>
             dispatch(rootAction.user.getUsers.request(payload)),
+        clearUserRequest: () => dispatch(rootAction.user.clearUser()),
     };
 };
 

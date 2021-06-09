@@ -6,6 +6,7 @@ import { Helmet, HelmetProvider } from 'react-helmet-async';
 import { Loading } from '../Loading';
 import { MessagingProvider } from '../MessagingProvider';
 import { ChatProvider } from '../ChatProvider';
+import { appOptions } from '../../constants';
 
 import 'bulma/css/bulma.css';
 import './style.css';
@@ -14,6 +15,7 @@ const SignIn = React.lazy(() => import('../SignIn'));
 const SignUp = React.lazy(() => import('../SignUp'));
 const NotFound = React.lazy(() => import('../NotFound'));
 const Thread = React.lazy(() => import('../Thread'));
+const Header = React.lazy(() => import('../Layouts/Header'));
 // const Chat = React.lazy(() => import('../Chat'));
 
 const helmetContext = {};
@@ -33,6 +35,7 @@ export const App = () => {
                     <MessagingProvider>
                         <BrowserRouter>
                             <Suspense fallback={<Loading />}>
+                                <Header appOptions={appOptions} />
                                 <Switch>
                                     <Route path="/" exact>
                                         <Thread />

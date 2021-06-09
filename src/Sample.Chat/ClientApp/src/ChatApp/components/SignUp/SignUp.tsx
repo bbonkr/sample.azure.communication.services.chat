@@ -107,7 +107,7 @@ export const SignUp = () => {
     }, [user]);
 
     return (
-        <Section classNames={['is-full-screen']}>
+        <Section classNames={['is-full-screen', 'p-header']}>
             <Helmet title="Sign up" />
             <div className="columns is-felx-direction-column is-justify-content-center is-align-items-center">
                 <div className="column is-full-mobile is-half is-felx-align-items-center">

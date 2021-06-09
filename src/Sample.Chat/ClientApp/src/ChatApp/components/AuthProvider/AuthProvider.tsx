@@ -19,7 +19,7 @@ export const AuthProvider = ({
                 )}`,
             );
         }
-    }, []);
+    }, [user]);
 
     return <React.Fragment>{children}</React.Fragment>;
 };

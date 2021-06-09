@@ -32,6 +32,16 @@ export const Thread = () => {
     const [page, setPage] = useState(1);
     const [joinThreadDialogOpen, setJoinThreadDialogOpen] = useState(false);
 
+    const handleClickAlert = () => {
+        addMessage({
+            id: `${+new Date()}`,
+            title: 'Alter',
+            detail: 'Hello World',
+            color: 'is-info',
+            duration: 'long',
+        });
+    };
+
     const handleCreateThread = () => {
         if (user) {
             // createThreadRequest({
@@ -92,8 +102,12 @@ export const Thread = () => {
 
     return (
         <AuthProvider>
-            <div className="is-flex is-prevent-height-100">
-                <div className="is-flex-1 is-scroll-y">
+            <div className="columns is-prevent-height-100 p-header">
+                <div
+                    className={`is-one-quaters-desktop is-scroll-y ${
+                        selectedThread ? 'is-hidden-mobile' : ''
+                    }`}
+                >
                     <div className="p-3">
                         <div className="mt-3">
                             <button
@@ -121,7 +135,7 @@ export const Thread = () => {
                         </ul>
                     </div>
                 </div>
-                <div className="is-flex-3 is-scroll-y chat-container">
+                <div className="is-three-quaters-desktop is-scroll-y chat-container">
                     {selectedThread && <Chat onClose={handleCloseChat} />}
                 </div>
             </div>
