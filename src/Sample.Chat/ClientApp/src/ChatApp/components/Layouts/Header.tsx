@@ -3,12 +3,19 @@ import { LinkModel } from '../../models';
 import { GenericLink } from '../GenericLink';
 import { AppOptions } from '../../constants';
 import { FaGithub } from 'react-icons/fa';
+
+import './Header.css';
+import { useUserApi } from '../../hooks/useUserApi';
+import { useChatApi } from '../../hooks/useChatApi';
+
 interface HeaderProps {
-    appOptions: AppOptions;
-    menuRoutes: LinkModel[];
+    appOptions?: AppOptions;
+    menuRoutes?: LinkModel[];
 }
 
 export const Header = ({ appOptions, menuRoutes }: HeaderProps) => {
+    const { user, clearUserRequest } = useUserApi();
+    const { chatClient } = useChatApi();
     const [navbarMenuIsActive, setNavbarMenuIsActive] = useState(false);
     const handleClickMenu = () => {
         window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
@@ -24,6 +31,22 @@ export const Header = ({ appOptions, menuRoutes }: HeaderProps) => {
 
     const handleClickOuter = () => {
         setNavbarMenuIsActive((_) => false);
+    };
+
+    const handleClickSignout = () => {
+        if (chatClient) {
+            chatClient
+                .stopRealtimeNotifications()
+                .then(() => {
+                    console.info('Chat client stopped');
+                })
+                .catch((err) => {
+                    console.error('Chat client could not stop.', err);
+                })
+                .finally(() => {
+                    clearUserRequest();
+                });
+        }
     };
 
     const handleWindowResize = () => {
@@ -75,6 +98,10 @@ export const Header = ({ appOptions, menuRoutes }: HeaderProps) => {
         };
     }, []);
 
+    if (!user) {
+        return <React.Fragment></React.Fragment>;
+    }
+
     return (
         <>
             {navbarMenuIsActive && (
@@ -93,7 +120,7 @@ export const Header = ({ appOptions, menuRoutes }: HeaderProps) => {
                 ></div>
             )}
             <nav
-                className="navbar is-fixed-top has-dropdown"
+                className="navbar is-fixed-top has-dropdown is-dark height-fix-56"
                 id="header-nav"
                 role="navigation"
                 aria-label="main navigation"
@@ -105,8 +132,7 @@ export const Header = ({ appOptions, menuRoutes }: HeaderProps) => {
                         classNames={['navbar-item']}
                         onClick={handleClickMenu}
                     >
-                        <img src="/bbon-icon-48.png" width="auto" height="28" />{' '}
-                        <span className="ml-3">{appOptions.title}</span>
+                        <span className="ml-3">{appOptions?.title}</span>
                     </GenericLink>
                     <a
                         role="button"
@@ -132,7 +158,7 @@ export const Header = ({ appOptions, menuRoutes }: HeaderProps) => {
                     onBlurCapture={() => setNavbarMenuIsActive((_) => false)}
                 >
                     <div className="navbar-start">
-                        {menuRoutes.map((menu) => {
+                        {menuRoutes?.map((menu) => {
                             return (
                                 <GenericLink
                                     classNames={['navbar-item']}
@@ -148,18 +174,29 @@ export const Header = ({ appOptions, menuRoutes }: HeaderProps) => {
                     </div>
 
                     <div className="navbar-end">
-                        <div className="navbar-item">
-                            <div className="buttons">
-                                <a
-                                    className="button"
-                                    href="https://github.com/bbonkr/bing-wallpaper"
-                                    target="_blank"
-                                    rel="external"
-                                    title="Navigate to github bing-wallpaper page"
-                                >
-                                    <FaGithub />
-                                </a>
+                        {appOptions?.github && (
+                            <div className="navbar-item">
+                                <div className="buttons">
+                                    <a
+                                        className="button"
+                                        href={appOptions?.github}
+                                        target="_blank"
+                                        rel="external"
+                                        title="Navigate to github repository page"
+                                    >
+                                        <FaGithub />
+                                    </a>
+                                </div>
                             </div>
+                        )}
+
+                        <div className="navbar-item">
+                            <button
+                                className="button "
+                                onClick={handleClickSignout}
+                            >
+                                Sign out
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -167,3 +204,5 @@ export const Header = ({ appOptions, menuRoutes }: HeaderProps) => {
         </>
     );
 };
+
+export default Header;

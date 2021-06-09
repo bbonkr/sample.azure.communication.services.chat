@@ -357,24 +357,26 @@ export const chatThreadClient = createReducer<
     (state, action) => action.payload ?? null,
 );
 
-const isChatClientReady = createReducer<boolean, RootAction>(
-    false,
-).handleAction([rootAction.chat.setIsReadyChatClient], (_, action) => true);
+const isChatClientReady = createReducer<boolean, RootAction>(false)
+    .handleAction([rootAction.chat.setIsReadyChatClient], (_, action) => true)
+    .handleAction([rootAction.user.clearUser], (_, __) => false);
 
 export const isChatRealTimeNotificationStarted = createReducer<
     boolean,
     RootAction
->(false).handleAction(
-    [rootAction.chat.setIsChatRealTimeNotificationStarted],
-    (state, action) => action.payload,
-);
+>(false)
+    .handleAction(
+        [rootAction.chat.setIsChatRealTimeNotificationStarted],
+        (state, action) => action.payload,
+    )
+    .handleAction([rootAction.user.clearUser], (_, __) => false);
 
-const isAddedChatClientEvents = createReducer<boolean, RootAction>(
-    false,
-).handleAction(
-    [rootAction.chat.setIsAddedChatClientEvents],
-    (state, action) => action.payload,
-);
+const isAddedChatClientEvents = createReducer<boolean, RootAction>(false)
+    .handleAction(
+        [rootAction.chat.setIsAddedChatClientEvents],
+        (state, action) => action.payload,
+    )
+    .handleAction([rootAction.user.clearUser], (_, __) => false);
 
 const receivedMessages = createReducer<ChatMessageReceivedEvent[], RootAction>(
     [],

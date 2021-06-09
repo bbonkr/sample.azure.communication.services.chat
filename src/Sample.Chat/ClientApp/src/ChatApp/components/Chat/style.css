@@ -1,9 +1,14 @@
 .chat-container {
     height: 100%;
     width: 100%;
+    /* min-height: calc(100vh - 56px); */
 }
 
-.chat-container>ul {
+.chat-container-height{
+    min-height: calc(100vh - 56px);
+}
+
+.chat-container>.chat-container>ul {
     display: flex;
     flex-direction: column;
 
@@ -40,4 +45,3 @@
 .chat-message.system {
     align-self: center;
 }
-
