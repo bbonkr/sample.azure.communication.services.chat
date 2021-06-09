@@ -157,10 +157,11 @@ namespace Sample.Chat.Controllers
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         [HttpPost]
-        [Route("thread/{threadId}/files")]
+        [Route("threads/{threadId}/files")]
         [Produces(typeof(ApiResponseModel<IEnumerable<ChatMessageModel>>))]
-        public async Task<IActionResult> SendFileAsync([FromRoute] string threadId, [FromBody] SendFileRequestModel model, CancellationToken cancellationToken = default)
+        public async Task<IActionResult> SendFileAsync([FromRoute] string threadId, [FromForm] SendFileRequestModel model, CancellationToken cancellationToken = default)
         {
+
             var requests = new List<FileSavedRequestModel>();
 
             foreach (var file in model.Files)

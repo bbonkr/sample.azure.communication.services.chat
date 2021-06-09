@@ -66,10 +66,12 @@ namespace Sample.Chat
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                app.UseSwaggerUIWithApiVersioning();            
+                app.UseHttpsRedirection();
             }
-            
-            app.UseHttpsRedirection();
+
+            app.UseSwaggerUIWithApiVersioning();
+
+
             app.UseStaticFiles();
 
             app.UseRouting();
