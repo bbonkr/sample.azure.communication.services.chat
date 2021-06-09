@@ -168,7 +168,8 @@ namespace Sample.Chat.Services
 
             if (attachment.ContentType.StartsWith("image/"))
             {
-                return $"<figure><img src=\"{uri}\" alt=\"{attachment.Name}\" /><figcaption>{attachment.Name}</figcaption></figure>";
+                // <figcaption>{attachment.Name}</figcaption>
+                return $"<figure><img src=\"{uri}\" alt=\"{attachment.Name}\" /></figure>";
             }
 
             if (attachment.ContentType.StartsWith("audio/"))

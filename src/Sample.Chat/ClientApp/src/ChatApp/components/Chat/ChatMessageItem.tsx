@@ -18,7 +18,9 @@ export const ChatMessageItem = ({
     const chatMessageType = chatMessage.type.toLowerCase();
 
     const isMessageType =
-        chatMessageType === 'text' || chatMessageType === 'html';
+        chatMessageType === 'text' ||
+        chatMessageType === 'html' ||
+        chatMessageType === 'richtext/html';
 
     const isMyMessage = identifier?.id === user?.id;
 
@@ -46,14 +48,15 @@ export const ChatMessageItem = ({
                 )}
 
                 {chatMessageType === 'text' && (
-                    <div className="has-text-white-bis">
+                    <div className="has-text-white-bis chat-message-content">
                         {chatMessage.content?.message}
                     </div>
                 )}
 
-                {chatMessageType === 'html' && (
+                {(chatMessageType === 'html' ||
+                    chatMessageType === 'richtext/html') && (
                     <div
-                        className="has-text-white-bis"
+                        className="has-text-white-bis chat-message-content"
                         dangerouslySetInnerHTML={{
                             __html: chatMessage.content?.message ?? '',
                         }}

@@ -74,7 +74,7 @@ export type SendMessageApiResponseModel = ApiResponseModel<ChatMessage[]>;
 export interface SendFileRequestModel {
     threadId: string;
     senderId: string;
-    files: FileList;
+    files: File[];
 }
 
 export type SendFileApiResponseModel = ApiResponseModel<ChatMessage[]>;
