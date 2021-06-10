@@ -137,7 +137,11 @@ export const Thread = () => {
                         </ul>
                     </div>
                 </div>
-                <div className="is-flex-3 is-scroll-y chat-container">
+                <div
+                    className={`is-flex-3 is-scroll-y chat-container ${
+                        selectedThread ? '' : 'is-hidden-mobile'
+                    }`}
+                >
                     {selectedThread && <Chat onClose={handleCloseChat} />}
                 </div>
             </div>
