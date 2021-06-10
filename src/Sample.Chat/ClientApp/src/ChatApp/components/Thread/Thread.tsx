@@ -55,8 +55,10 @@ export const Thread = () => {
     const handleClickThread =
         (threadId: string) => (event: React.MouseEvent<HTMLAnchorElement>) => {
             event.preventDefault();
-            console.info('thread clicked. ', threadId);
-            selectThread(threadId);
+
+            if (!selectedThread || selectedThread?.id !== threadId) {
+                selectThread(threadId);
+            }
         };
 
     const handleCloseChat = () => {
@@ -102,9 +104,9 @@ export const Thread = () => {
 
     return (
         <AuthProvider>
-            <div className="columns is-prevent-height-100 p-header">
+            <div className="is-flex is-prevent-height-100 p-header">
                 <div
-                    className={`is-one-quaters-desktop is-scroll-y ${
+                    className={`is-flex-1 is-scroll-y ${
                         selectedThread ? 'is-hidden-mobile' : ''
                     }`}
                 >
@@ -135,7 +137,7 @@ export const Thread = () => {
                         </ul>
                     </div>
                 </div>
-                <div className="is-three-quaters-desktop is-scroll-y chat-container">
+                <div className="is-flex-3 is-scroll-y chat-container">
                     {selectedThread && <Chat onClose={handleCloseChat} />}
                 </div>
             </div>
