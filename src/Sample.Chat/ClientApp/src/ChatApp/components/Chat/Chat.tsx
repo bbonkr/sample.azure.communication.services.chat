@@ -12,6 +12,7 @@ import './style.css';
 import { Modal } from '../Layouts';
 import { setChatThreadClient } from '../../store/actions/chat';
 import { ChatThreadClient } from '@azure/communication-chat';
+import { AcsHelper } from '../../lib/AcsHelper';
 
 export interface ChatProps {
     onClose?: () => void;
@@ -232,29 +233,53 @@ export const Chat = ({ onClose }: ChatProps) => {
                 <div className="hero-body has-background-light is-align-items-flex-start">
                     <div className="chat-container">
                         <ul className="is-flex is-flex-direction-column is-flex-grow-1 is-scroll-y ">
-                            <li className="chat-message system">
-                                <button
-                                    className="button"
-                                    disabled={
-                                        !threadCreatedOn ||
-                                        threadCreatedOn > chatMessageStart
-                                    }
-                                    onClick={handleClickGetPreviousChatMessages}
-                                >
-                                    Load more
-                                </button>
+                            <li className="chat-message-item system">
+                                <div className="chat-message-item-content">
+                                    <button
+                                        className="button"
+                                        disabled={
+                                            !threadCreatedOn ||
+                                            threadCreatedOn > chatMessageStart
+                                        }
+                                        onClick={
+                                            handleClickGetPreviousChatMessages
+                                        }
+                                    >
+                                        Load more
+                                    </button>
+                                </div>
                             </li>
                             {messages
                                 .sort((a, b) =>
                                     a.createdOn > b.createdOn ? 1 : -1,
                                 )
-                                .map((m) => (
-                                    <ChatMessageItem
-                                        key={m.id}
-                                        chatMessage={m}
-                                        user={user ?? undefined}
-                                    />
-                                ))}
+                                .map((m, index, arr) => {
+                                    const curr =
+                                        AcsHelper.parseIdentifier(m.sender)
+                                            ?.id ?? '';
+                                    const prev =
+                                        index > 0
+                                            ? AcsHelper.parseIdentifier(
+                                                  arr[index - 1].sender,
+                                              )?.id ?? ''
+                                            : '';
+                                    const userChanged =
+                                        index === 0 || curr !== prev;
+                                    console.info(
+                                        'sender changed (curr, prev): ',
+                                        userChanged,
+                                        curr,
+                                        prev,
+                                    );
+                                    return (
+                                        <ChatMessageItem
+                                            key={m.id}
+                                            chatMessage={m}
+                                            user={user ?? undefined}
+                                            showDisplayName={userChanged}
+                                        />
+                                    );
+                                })}
                         </ul>
                     </div>
                 </div>
