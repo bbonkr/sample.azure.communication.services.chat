@@ -231,7 +231,7 @@ export const Chat = ({ onClose }: ChatProps) => {
                 </div>
                 <div className="hero-body has-background-light is-align-items-flex-start">
                     <div className="chat-container">
-                        <ul className="is-flex-grow-1 is-scroll-y ">
+                        <ul className="is-flex is-flex-direction-column is-flex-grow-1 is-scroll-y ">
                             <li className="chat-message system">
                                 <button
                                     className="button"
