@@ -2,11 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { LinkModel } from '../../models';
 import { GenericLink } from '../GenericLink';
 import { AppOptions } from '../../constants';
-import { FaGithub, FaArrowLeft } from 'react-icons/fa';
-
-import './Header.css';
+import { FaGithub, FaArrowLeft, FaBookOpen } from 'react-icons/fa';
 import { useUserApi } from '../../hooks/useUserApi';
 import { useChatApi } from '../../hooks/useChatApi';
+import './Header.css';
 
 interface HeaderProps {
     appOptions?: AppOptions;
@@ -188,9 +187,9 @@ export const Header = ({ appOptions, menuRoutes }: HeaderProps) => {
                     </div>
 
                     <div className="navbar-end">
-                        {appOptions?.github && (
-                            <div className="navbar-item">
-                                <div className="buttons">
+                        <div className="navbar-item">
+                            <div className="buttons">
+                                {appOptions?.github && (
                                     <a
                                         className="button"
                                         href={appOptions?.github}
@@ -200,9 +199,18 @@ export const Header = ({ appOptions, menuRoutes }: HeaderProps) => {
                                     >
                                         <FaGithub />
                                     </a>
-                                </div>
+                                )}
+                                <a
+                                    className="button"
+                                    href="/swagger"
+                                    target="_blank"
+                                    rel="external"
+                                    title="Navigate to API specification page"
+                                >
+                                    <FaBookOpen />
+                                </a>
                             </div>
-                        )}
+                        </div>
 
                         <div className="navbar-item">
                             <button

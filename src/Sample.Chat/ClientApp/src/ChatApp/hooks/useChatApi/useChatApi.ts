@@ -27,6 +27,10 @@ import { rootAction } from '../../store/actions';
 import { RootState } from '../../store/reducers';
 import { ChatState } from '../../store/reducers/chat';
 import { AcsHelper } from '../../lib/AcsHelper';
+import {
+    GetUserApiResponseModel,
+    GetUserResponseModel,
+} from '../../models/UserClient';
 
 export const useChatApi = () => {
     const dispatch = useDispatch();
@@ -53,33 +57,41 @@ export const useChatApi = () => {
     );
     //#endregion
 
-    const startChatClient = debounce(() => {
-        const { chatClient } = state;
-        if (chatClient) {
-            console.info('🔨 call: startChatClient', new Date().toISOString());
+    const startChatClient = useCallback(
+        debounce(() => {
+            const { chatClient } = state;
+            if (chatClient) {
+                console.info(
+                    '🔨 call: startChatClient',
+                    new Date().toISOString(),
+                );
 
-            // Must call startRealtimeNotifications() first
-            chatClient
-                .startRealtimeNotifications()
-                .then(() => {
-                    dispatch(
+                // Must call startRealtimeNotifications() first
+                chatClient
+                    .startRealtimeNotifications()
+                    .then(() => {
+                        dispatch(
+                            rootAction.chat.setIsChatRealTimeNotificationStarted(
+                                true,
+                            ),
+                        );
+                        console.info('🔨 Real-time notification started.');
+
+                        // addEventListeners(state, dispatch);
+                    })
+                    .catch((err) => {
                         rootAction.chat.setIsChatRealTimeNotificationStarted(
-                            true,
-                        ),
-                    );
-                    console.info('🔨 Real-time notification started.');
-
-                    // addEventListeners(state, dispatch);
-                })
-                .catch((err) => {
-                    rootAction.chat.setIsChatRealTimeNotificationStarted(false);
-                    console.error(
-                        '❌ Cloud not start real-time notification',
-                        err,
-                    );
-                });
-        }
-    }, 300);
+                            false,
+                        );
+                        console.error(
+                            '❌ Cloud not start real-time notification',
+                            err,
+                        );
+                    });
+            }
+        }, 300),
+        [],
+    );
 
     const addEventListeners = (chatClient: ChatClient) => {
         chatClient.on('chatThreadCreated', (e) => {
@@ -194,7 +206,7 @@ export const useChatApi = () => {
     const getMessagesAsync = async (
         chatThreadClient: ChatThreadClient,
         startTime?: Date,
-    ) => {
+    ): Promise<ChatMessage[]> => {
         const loadedMessage: ChatMessage[] = [];
 
         let now = new Date();
@@ -216,6 +228,8 @@ export const useChatApi = () => {
                 messages: loadedMessage,
             });
         }
+
+        return loadedMessage;
     };
 
     useEffect(() => {
@@ -295,6 +309,8 @@ export const useChatApi = () => {
         addChatMessages,
         updateChatMessage,
         deleteChatMessage,
+        initializeChatClient: (payload: GetUserResponseModel) =>
+            dispatch(rootAction.chat.initializeChatClient(payload)),
     };
 };
 

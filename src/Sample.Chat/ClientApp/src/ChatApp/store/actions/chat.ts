@@ -26,119 +26,121 @@ import {
     SendMessageApiResponseModel,
     SendMessageRequestModel,
 } from '../../models/ChatClient';
+import {
+    GetUserApiResponseModel,
+    GetUserResponseModel,
+} from '../../models/UserClient';
 
-export const getThreads = createAsyncAction(
+const getThreads = createAsyncAction(
     'get-threads/request',
     'get-threads/success',
     'get-threads/failure',
 )<GetThreadsRequestModel, GetThreadsApiResponseModel, ApiResponseModel>();
 
-export const createThread = createAsyncAction(
+const createThread = createAsyncAction(
     'create-thread/request',
     'create-thread/success',
     'create-thread/failure',
 )<CreateThreadRequestModel, CreateThreadApiResponseModel, ApiResponseModel>();
 
-export const joinThread = createAsyncAction(
+const joinThread = createAsyncAction(
     'join-thread/request',
     'join-thread/success',
     'join-thread/failure',
 )<JoinThreadRequestModel, JoinThreadApiResponseModel, ApiResponseModel>();
 
-export const leaveThread = createAsyncAction(
+const leaveThread = createAsyncAction(
     'leave-thread/request',
     'leave-thread/success',
     'leave-thread/failure',
 )<LeaveThreadRequestModel, LeaveThreadApiResponseModel, ApiResponseModel>();
 
-export const deleteThread = createAsyncAction(
+const deleteThread = createAsyncAction(
     'delete-thread/request',
     'delete-thread/success',
     'delete-thread/failure',
 )<DeleteThreadRequestModel, DeleteThreadApiResponseModel, ApiResponseModel>();
 
-export const sendMessage = createAsyncAction(
+const sendMessage = createAsyncAction(
     'send-message/request',
     'send-message/success',
     'send-message/failure',
 )<SendMessageRequestModel, SendMessageApiResponseModel, ApiResponseModel>();
 
-export const sendFile = createAsyncAction(
+const sendFile = createAsyncAction(
     'send-file/request',
     'send-file/success',
     'send-file/failure',
 )<SendFileRequestModel, SendFileApiResponseModel, ApiResponseModel>();
 
-export const appendThread =
-    createAction('append-thread')<GetThreadResponseModel>();
+const initializeChatClient = createAction(
+    'initialize-chat-client/request',
+)<GetUserResponseModel>();
 
-export const updateThread =
+const appendThread = createAction('append-thread')<GetThreadResponseModel>();
+
+const updateThread =
     createAction('update-thread')<
         Pick<GetThreadResponseModel, 'id'> & Partial<GetThreadResponseModel>
     >();
 
-export const removeThread = createAction('remove-thread')<string>();
+const removeThread = createAction('remove-thread')<string>();
 
-export const selectThread =
+const selectThread =
     createAction('select-thread')<GetThreadResponseModel | undefined>();
 
-export const selectThreadId =
-    createAction('select-thread-id')<string | undefined>();
+const selectThreadId = createAction('select-thread-id')<string | undefined>();
 
-export const setChatThreadClient = createAction('set-chat-thread-client')<
+const setChatThreadClient = createAction('set-chat-thread-client')<
     ChatThreadClient | undefined
 >();
 
-export const addParticipants = createAction(
+const addParticipants = createAction(
     'add-chat-participants',
 )<AddParticipantsModel>();
 
-export const removeParticipant = createAction(
+const removeParticipant = createAction(
     'remove-chat-participant',
 )<RemoveParticipantModel>();
 
-export const clearParticipants = createAction(
+const clearParticipants = createAction(
     'clear-chat-participants',
 )<ClearParticipantsModel>();
 
-export const addChatMessages =
+const addChatMessages =
     createAction('add-chat-messages')<AddChatMessagesModel>();
 
-export const updateChatMessage = createAction(
-    'update-chat-message',
-)<ChatMessage>();
+const updateChatMessage = createAction('update-chat-message')<ChatMessage>();
 
-export const deleteChatMessage = createAction('delete-chat-message')<
+const deleteChatMessage = createAction('delete-chat-message')<
     Partial<Pick<ChatMessage, 'id'>>
 >();
 
-export const clearChatMessages = createAction('clear-chat-message')();
+const clearChatMessages = createAction('clear-chat-message')();
 
-export const clearSentMessageIds = createAction('clear-sent-message-ids')();
+const clearSentMessageIds = createAction('clear-sent-message-ids')();
 
-export const setIsReadyChatClient = createAction(
+const setIsReadyChatClient = createAction(
     'set-chat-client-is-ready',
 )<boolean>();
 
-export const setIsChatRealTimeNotificationStarted = createAction(
+const setIsChatRealTimeNotificationStarted = createAction(
     'set-chat-client-started',
 )<boolean>();
 
-export const setIsAddedChatClientEvents = createAction(
+const setIsAddedChatClientEvents = createAction(
     'set-is-added-chat-client-events',
 )<boolean>();
 
-export const addReceivedChatMessage = createAction(
+const addReceivedChatMessage = createAction(
     'add-received-chat-message',
 )<ChatMessageReceivedEvent>();
 
-export const removeReceivedChatMessage = createAction(
+const removeReceivedChatMessage = createAction(
     'remove-received-chat-message',
 )<string>();
 
-export const clearReceivedChatMessage = createAction(
-    'clear-received-chat-message',
-)();
+const clearReceivedChatMessage = createAction('clear-received-chat-message')();
 
 export const chatActions = {
     getThreads,
@@ -170,6 +172,8 @@ export const chatActions = {
     addReceivedChatMessage,
     removeReceivedChatMessage,
     clearReceivedChatMessage,
+
+    initializeChatClient,
 };
 
 export type ChatActions = ActionType<typeof chatActions>;
