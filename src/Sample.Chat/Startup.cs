@@ -71,7 +71,6 @@ namespace Sample.Chat
 
             app.UseSwaggerUIWithApiVersioning();
 
-
             app.UseStaticFiles();
 
             app.UseRouting();
