@@ -7,12 +7,10 @@ import { AuthProvider } from '../AuthProvider';
 import { ChatForm } from './ChatForm';
 import { ChatMessageItem } from './ChatMessageItem';
 import { JoinThreadDialog } from '../JoinThreadDialog';
-
-import './style.css';
 import { Modal } from '../Layouts';
-import { setChatThreadClient } from '../../store/actions/chat';
 import { ChatThreadClient } from '@azure/communication-chat';
 import { AcsHelper } from '../../lib/AcsHelper';
+import './style.css';
 
 export interface ChatProps {
     onClose?: () => void;
@@ -101,12 +99,13 @@ export const Chat = ({ onClose }: ChatProps) => {
 
     const handleClickGetPreviousChatMessages = () => {
         if (threadClient) {
-            const start = dayjs(chatMessageStart).add(-1, 'd').toDate();
+            const threadCreateOnValue = threadCreatedOn;
+            const start = dayjs(chatMessageStart).add(-1, 'week').toDate();
             setChatMessageStart((_) => start);
 
             getMessagesAsync(threadClient, start)
-                .then(() => {
-                    console.info('🔨 messages loaded');
+                .then((messages) => {
+                    console.info('🔨 messages loaded', messages);
                 })
                 .catch((err) => {
                     console.error('❌ messages could not load.', err);
@@ -245,7 +244,10 @@ export const Chat = ({ onClose }: ChatProps) => {
                                             handleClickGetPreviousChatMessages
                                         }
                                     >
-                                        Load more
+                                        <span>
+                                            Load more{' '}
+                                            <small>(previous 1 week)</small>
+                                        </span>
                                     </button>
                                 </div>
                             </li>

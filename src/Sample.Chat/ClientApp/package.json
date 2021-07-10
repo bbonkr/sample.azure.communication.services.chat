@@ -25,6 +25,7 @@
         "react-router-dom": "^5.2.0",
         "redux-devtools-extension": "^2.13.9",
         "redux-observable": "^1.2.0",
+        "redux-persist": "^6.0.0",
         "rxjs": "^6.6.6",
         "typesafe-actions": "^5.1.0",
         "yup": "^0.32.9"

@@ -215,7 +215,6 @@ const chatClient = createReducer<ChatClient | null, RootAction>(null)
     .handleAction(
         [rootAction.user.loadUser.success, rootAction.user.createUser.success],
         (state, action) => {
-            console.info(action.type);
             if (state) {
                 return state;
             }
@@ -228,6 +227,16 @@ const chatClient = createReducer<ChatClient | null, RootAction>(null)
             return client;
         },
     )
+    .handleAction([rootAction.chat.initializeChatClient], (state, action) => {
+        if (state) {
+            return state;
+        }
+        const { token, gatewayUrl } = action.payload;
+        const tokenCredential = new AzureCommunicationTokenCredential(token);
+        const client = new ChatClient(gatewayUrl, tokenCredential);
+
+        return client;
+    })
     .handleAction(
         [
             rootAction.user.loadUser.request,
